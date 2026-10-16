@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Cosy Nest – Leukerbad</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  var T = {
+    fr:{
+      name:'FR', and:'et',
+      welcomeNamed:['Bienvenue,','{name}.'], welcomeAnon:['Bienvenue','au Cosy Nest.'],
+      intro:'Nous vous souhaitons un excellent séjour à Loèche-les-Bains. Tout ce qu\u2019il faut savoir sur le studio et la région se trouve ici.',
+      place:'Studio 14, Haus Adlerhorst, Loèche-les-Bains',
+      stay:'Votre séjour : du {from} au {to}',
+      network:'Réseau', password:'Mot de passe', copy:'Copier', copied:'Copié',
+      titles:{arrival:'Arrivée et départ', tv:'Télévision', trash:'Poubelles et tri', parking:'Parking', guestcard:'Guest Card', walks:'Balades et activités', food:'Restaurants', transport:'Transports', emergency:'Urgences', contact:'Nous contacter', checkout:'Avant de partir'},
+      checkin:'Arrivée dès {checkin}.', checkout:'Départ jusqu\u2019à {checkout}.',
+      spot:'Votre place de parc : {spot}.',
+      trash:'En Valais, les ordures ménagères vont dans les sacs taxés officiels. Le verre, le PET, le papier et l\u2019alu se trient à part.',
+      guestcard:'Chaque voyageur qui paie la taxe de séjour reçoit une carte d\u2019hôte. Elle donne des avantages auprès de partenaires de la station.',
+      walks:[
+        'Gemmi : le téléphérique part du haut du village et monte au col, à plus de 2\u2019300 m. Vue sur les Alpes valaisannes et balade facile jusqu\u2019au lac de Daubensee.',
+        'Torrent : la télécabine mène à la Rinderhütte, point de départ de sentiers panoramiques en été et domaine skiable en hiver.',
+        'Bains thermaux : Leukerbad Therme et Walliser Alpentherme sont à quelques minutes à pied. L\u2019eau sort de la montagne à plus de 50 °C.',
+        'Passerelle des sources thermales : une courte marche le long de la Dala jusqu\u2019aux sources chaudes, dans les gorges au-dessus du village.'
+      ],
+      transport:'Le bus LLB relie Loèche-les-Bains à la gare de Loèche (Leuk) en une trentaine de minutes. De là, trains CFF vers Sion, Brigue et Berne.',
+      emergency:[['Ambulance','144'],['Police','117'],['Pompiers','118'],['Rega, sauvetage aérien','1414'],['Numéro d\u2019urgence européen','112']],
+      contactPhone:'Une question ? Écrivez-nous dans l\u2019application Airbnb ou Booking, ou appelez le {phone}.',
+      contact:'Une question ? Écrivez-nous dans l\u2019application Airbnb ou Booking.',
+      thanks:'Merci pour votre visite. Bon retour !'
+    },
+    de:{
+      name:'DE', and:'und',
+      welcomeNamed:['Willkommen,','{name}.'], welcomeAnon:['Willkommen','im Cosy Nest.'],
+      intro:'Wir wünschen Ihnen einen schönen Aufenthalt in Leukerbad. Alles Wichtige zum Studio und zur Region finden Sie hier.',
+      place:'Studio 14, Haus Adlerhorst, Leukerbad',
+      stay:'Ihr Aufenthalt: {from} bis {to}',
+      network:'Netzwerk', password:'Passwort', copy:'Kopieren', copied:'Kopiert',
+      titles:{arrival:'Ankunft und Abreise', tv:'Fernseher', trash:'Abfall und Recycling', parking:'Parkieren', guestcard:'Guest Card', walks:'Wanderungen und Aktivitäten', food:'Restaurants', transport:'Verkehr', emergency:'Notfall', contact:'Kontakt', checkout:'Vor der Abreise'},
+      checkin:'Check-in ab {checkin}.', checkout:'Check-out bis {checkout}.',
+      spot:'Ihr Parkplatz: {spot}.',
+      trash:'Im Wallis gehört der Hausmüll in die offiziellen Gebührensäcke. Glas, PET, Papier und Alu werden separat gesammelt.',
+      guestcard:'Jeder Gast, der die Kurtaxe bezahlt, erhält eine Gästekarte. Sie bietet Vergünstigungen bei Partnern des Kurorts.',
+      walks:[
+        'Gemmi: Die Luftseilbahn fährt vom oberen Dorfrand auf den Pass auf über 2300 m. Weitblick auf die Walliser Alpen und ein leichter Spaziergang zum Daubensee.',
+        'Torrent: Die Gondelbahn bringt Sie zur Rinderhütte, Ausgangspunkt für Panoramawanderungen im Sommer und Skigebiet im Winter.',
+        'Thermalbäder: Leukerbad Therme und Walliser Alpentherme liegen wenige Gehminuten entfernt. Das Wasser tritt mit über 50 °C aus dem Berg.',
+        'Thermalquellen-Steg: Ein kurzer Weg der Dala entlang zu den heissen Quellen in der Schlucht oberhalb des Dorfs.'
+      ],
+      transport:'Der LLB-Bus verbindet Leukerbad in rund 30 Minuten mit dem Bahnhof Leuk. Von dort fahren SBB-Züge nach Sitten, Brig und Bern.',
+      emergency:[['Sanität','144'],['Polizei','117'],['Feuerwehr','118'],['Rega, Luftrettung','1414'],['Europäische Notrufnummer','112']],
+      contactPhone:'Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App oder rufen Sie an: {phone}.',
+      contact:'Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App.',
+      thanks:'Danke für Ihren Besuch und gute Heimreise!'
+    },
+    en:{
+      name:'EN', and:'and',
+      welcomeNamed:['Welcome,','{name}.'], welcomeAnon:['Welcome','to Cosy Nest.'],
+      intro:'We hope you have a wonderful stay in Leukerbad. Everything you need to know about the studio and the area is here.',
+      place:'Studio 14, Haus Adlerhorst, Leukerbad',
+      stay:'Your stay: {from} to {to}',
+      network:'Network', password:'Password', copy:'Copy', copied:'Copied',
+      titles:{arrival:'Check-in and check-out', tv:'Television', trash:'Rubbish and recycling', parking:'Parking', guestcard:'Guest Card', walks:'Walks and activities', food:'Restaurants', transport:'Getting around', emergency:'Emergencies', contact:'Contact us', checkout:'Before you leave'},
+      checkin:'Check-in from {checkin}.', checkout:'Check-out by {checkout}.',
+      spot:'Your parking space: {spot}.',
+      trash:'In Valais, household waste goes in the official taxed bags. Glass, PET, paper and aluminium are collected separately.',
+      guestcard:'Every guest who pays the tourist tax receives a guest card. It gives you benefits with partners in the resort.',
+      walks:[
+        'Gemmi: the cable car leaves from the top of the village and climbs to the pass at over 2,300 m. Views across the Valais Alps and an easy walk to Lake Daubensee.',
+        'Torrent: the gondola takes you to the Rinderhütte, the starting point for panoramic trails in summer and a ski area in winter.',
+        'Thermal baths: Leukerbad Therme and Walliser Alpentherme are a few minutes\u2019 walk away. The water comes out of the mountain at over 50 °C.',
+        'Thermal springs footbridge: a short walk along the Dala river to the hot springs in the gorge above the village.'
+      ],
+      transport:'The LLB bus links Leukerbad with Leuk railway station in about 30 minutes. From there, SBB trains run to Sion, Brig and Bern.',
+      emergency:[['Ambulance','144'],['Police','117'],['Fire brigade','118'],['Rega air rescue','1414'],['European emergency number','112']],
+      contactPhone:'Any questions? Message us in the Airbnb or Booking app, or call {phone}.',
+      contact:'Any questions? Message us in the Airbnb or Booking app.',
+      thanks:'Thank you for staying with us. Safe travels home!'
+    },
+    it:{
+      name:'IT', and:'e',
+      welcomeNamed:['Un caloroso benvenuto,','{name}.'], welcomeAnon:['Benvenuti','al Cosy Nest.'],
+      intro:'Vi auguriamo un ottimo soggiorno a Leukerbad. Qui trovate tutto quello che c\u2019è da sapere sullo studio e sulla regione.',
+      place:'Studio 14, Haus Adlerhorst, Leukerbad',
+      stay:'Il vostro soggiorno: dal {from} al {to}',
+      network:'Rete', password:'Password', copy:'Copia', copied:'Copiato',
+      titles:{arrival:'Arrivo e partenza', tv:'Televisione', trash:'Rifiuti e raccolta differenziata', parking:'Parcheggio', guestcard:'Guest Card', walks:'Passeggiate e attività', food:'Ristoranti', transport:'Trasporti', emergency:'Emergenze', contact:'Contattarci', checkout:'Prima di partire'},
+      checkin:'Check-in dalle {checkin}.', checkout:'Check-out entro le {checkout}.',
+      spot:'Il vostro posto auto: {spot}.',
+      trash:'In Vallese i rifiuti domestici vanno negli appositi sacchi a pagamento. Vetro, PET, carta e alluminio si raccolgono separatamente.',
+      guestcard:'Ogni ospite che paga la tassa di soggiorno riceve una guest card. Offre vantaggi presso i partner della località.',
+      walks:[
+        'Gemmi: la funivia parte dalla parte alta del paese e sale al passo, a oltre 2300 m. Vista sulle Alpi vallesane e facile passeggiata fino al lago Daubensee.',
+        'Torrent: la cabinovia porta alla Rinderhütte, punto di partenza di sentieri panoramici in estate e comprensorio sciistico in inverno.',
+        'Terme: Leukerbad Therme e Walliser Alpentherme sono a pochi minuti a piedi. L\u2019acqua esce dalla montagna a oltre 50 °C.',
+        'Passerella delle sorgenti termali: una breve camminata lungo la Dala fino alle sorgenti calde, nella gola sopra il paese.'
+      ],
+      transport:'L\u2019autobus LLB collega Leukerbad alla stazione di Leuk in circa 30 minuti. Da lì partono i treni FFS per Sion, Briga e Berna.',
+      emergency:[['Ambulanza','144'],['Polizia','117'],['Pompieri','118'],['Rega, soccorso aereo','1414'],['Numero d\u2019emergenza europeo','112']],
+      contactPhone:'Domande? Scriveteci nell\u2019app Airbnb o Booking, oppure chiamate il {phone}.',
+      contact:'Domande? Scriveteci nell\u2019app Airbnb o Booking.',
+      thanks:'Grazie per il vostro soggiorno e buon viaggio di ritorno!'
+    },
+    es:{
+      name:'ES', and:'y',
+      welcomeNamed:['Le damos la bienvenida,','{name}.'], welcomeNamedPlural:['Les damos la bienvenida,','{name}.'], welcomeAnon:['Bienvenidos','a Cosy Nest.'],
+      intro:'Le deseamos una estancia estupenda en Leukerbad. Aquí encontrará todo lo que hay que saber sobre el estudio y la región.',
+      place:'Estudio 14, Haus Adlerhorst, Leukerbad',
+      stay:'Su estancia: del {from} al {to}',
+      network:'Red', password:'Contraseña', copy:'Copiar', copied:'Copiado',
+      titles:{arrival:'Llegada y salida', tv:'Televisión', trash:'Basura y reciclaje', parking:'Aparcamiento', guestcard:'Guest Card', walks:'Paseos y actividades', food:'Restaurantes', transport:'Transporte', emergency:'Emergencias', contact:'Contacto', checkout:'Antes de irse'},
+      checkin:'Entrada a partir de las {checkin}.', checkout:'Salida antes de las {checkout}.',
+      spot:'Su plaza de aparcamiento: {spot}.',
+      trash:'En el Valais, la basura doméstica va en bolsas oficiales de pago. El vidrio, el PET, el papel y el aluminio se separan.',
+      guestcard:'Cada huésped que paga la tasa turística recibe una guest card. Ofrece ventajas con los socios de la estación.',
+      walks:[
+        'Gemmi: el teleférico sale de la parte alta del pueblo y sube al puerto, a más de 2300 m. Vistas a los Alpes del Valais y un paseo fácil hasta el lago Daubensee.',
+        'Torrent: la telecabina lleva a la Rinderhütte, punto de partida de senderos panorámicos en verano y zona de esquí en invierno.',
+        'Baños termales: Leukerbad Therme y Walliser Alpentherme están a pocos minutos a pie. El agua sale de la montaña a más de 50 °C.',
+        'Pasarela de las fuentes termales: un paseo corto junto al río Dala hasta las fuentes calientes, en la garganta sobre el pueblo.'
+      ],
+      transport:'El autobús LLB une Leukerbad con la estación de Leuk en unos 30 minutos. Desde allí salen trenes SBB a Sion, Brig y Berna.',
+      emergency:[['Ambulancia','144'],['Policía','117'],['Bomberos','118'],['Rega, rescate aéreo','1414'],['Número de emergencia europeo','112']],
+      contactPhone:'¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking, o llame al {phone}.',
+      contact:'¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking.',
+      thanks:'Gracias por su visita. ¡Buen viaje de vuelta!'
+    }
+  };
+
+  /* Notes pour l'hôte (identiques dans toutes les langues, à remplacer par le vrai contenu) */
+  var TODO = {
+    times:'Heure d\u2019arrivée et heure de départ (Espace hôte → Réglages).',
+    keys:'Remise des clés : boîte à clés, code, où déposer les clés au départ.',
+    wifi:'Nom du réseau et mot de passe Wi\u2011Fi (Espace hôte → Réglages).',
+    tv:'Mode d\u2019emploi de la TV : télécommande à utiliser, bouton source/HDMI, accès aux chaînes, Netflix ou YouTube, chaînes en langues étrangères.',
+    trash:'Où se trouvent les poubelles de l\u2019immeuble, où acheter les sacs taxés, emplacement du point de tri, jours de ramassage.',
+    parking:'Place privée ou parking public : nom, distance, tarif, règles en hiver (pneus neige, déneigement).',
+    guestcard:'Comment la carte est remise (envoyée par nous, dans le studio) et liste exacte des avantages (bus local, réductions bains, remontées).',
+    walks:'Vos balades préférées, temps de marche depuis le studio, activités selon la saison.',
+    food:'3 à 5 restaurants recommandés : nom, spécialité, budget, distance, réservation conseillée ou non.',
+    transport:'Arrêt de bus le plus proche du studio et temps de marche.',
+    emergency:'Pharmacie, médecin et hôpital les plus proches.',
+    checkout:'Consignes de départ : vaisselle, poubelles, fenêtres, chauffage, clés.'
+  };
+
+  var LANGS = ['fr','de','en','it','es'];
+  var LOCALE = {fr:'fr-CH', de:'de-CH', en:'en-GB', it:'it-CH', es:'es-ES'};
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fill(tpl, vars){ return tpl.replace(/\{(\w+)\}/g, function(m,k){ return vars[k] != null ? vars[k] : m; }); }
+  function todayISO(){
+    try { return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+    catch(e){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  }
+  function fmtDate(iso, lang, withYear){
+    try {
+      var p = String(iso).split('-'); var d = new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
+      var o = {day:'numeric', month:'long', timeZone:'UTC'}; if (withYear) o.year = 'numeric';
+      return new Intl.DateTimeFormat(LOCALE[lang] || 'fr-CH', o).format(d);
+    } catch(e){ return iso; }
+  }
+  function namesOf(s){ var n = Array.isArray(s.names) ? s.names : String(s.name || '').split(/\s*[,;]\s*/); return n.map(function(x){ return String(x).trim(); }).filter(Boolean); }
+  function joinNames(names, lang){
+    var conj = (T[lang] && T[lang].and) || 'et';
+    if (names.length <= 1) return names[0] || '';
+    if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
+    return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
+  }
+  function currentStay(stays){
+    var today = todayISO();
+    return (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; })
+      .sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  }
+  function api(method, body){
+    var url = (window.CN_CONFIG && window.CN_CONFIG.api) || '';
+    if (!url) return Promise.reject({code:'no_api'});
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 15000);
+    var opts = {method:method, redirect:'follow', cache:'no-store'};
+    if (ctrl) opts.signal = ctrl.signal;
+    if (method === 'POST'){ opts.body = JSON.stringify(body || {}); opts.headers = {'Content-Type':'text/plain;charset=utf-8'}; }
+    var u = method === 'GET' ? url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now() : url;
+    return fetch(u, opts).then(function(r){ return r.text(); }).then(function(txt){
+      clearTimeout(timer);
+      try { return JSON.parse(txt); } catch(e){ throw {code:'bad_response'}; }
+    }, function(e){ clearTimeout(timer); throw {code: (e && e.name === 'AbortError') ? 'timeout' : 'network'}; });
+  }
+
+  var state = {stays:[], settings:{}};
+  var loading = true;
+  try { var cached = JSON.parse(localStorage.getItem('cn-state') || 'null'); if (cached && cached.stays) { state = cached; loading = false; } } catch(e){}
+
+  var qs = {};
+  try { location.search.slice(1).split('&').forEach(function(kv){ if(!kv) return; var p = kv.split('='); qs[decodeURIComponent(p[0])] = decodeURIComponent((p[1]||'').replace(/\+/g,' ')); }); } catch(e){}
+
+  function browserLang(){
+    var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+    for (var i = 0; i < list.length; i++){ var l = String(list[i]).slice(0,2).toLowerCase(); if (LANGS.indexOf(l) >= 0) return l; }
+    return 'en';
+  }
+  var manualLang = null;
+  try { manualLang = sessionStorage.getItem('cn-lang'); } catch(e){}
+  if (LANGS.indexOf(qs.lang) >= 0) manualLang = qs.lang;
+
+  function todo(txt){ return '<div class="todo"><b>À compléter</b>' + esc(txt) + '</div>'; }
+  function p(txt){ return '<p>' + esc(txt) + '</p>'; }
+
+  function sectionBody(id, t, S){
+    var h = '';
+    if (id === 'arrival'){
+      if (S.checkin && S.checkout) h += p(fill(t.checkin,{checkin:S.checkin}) + ' ' + fill(t.checkout,{checkout:S.checkout})); else h += todo(TODO.times);
+      h += todo(TODO.keys);
+    } else if (id === 'tv'){ h += todo(TODO.tv);
+    } else if (id === 'trash'){ h += p(t.trash) + todo(TODO.trash);
+    } else if (id === 'parking'){ if (S.parkingSpot) h += p(fill(t.spot,{spot:S.parkingSpot})); h += todo(TODO.parking);
+    } else if (id === 'guestcard'){ h += p(t.guestcard) + todo(TODO.guestcard);
+    } else if (id === 'walks'){ h += t.walks.map(p).join('') + todo(TODO.walks);
+    } else if (id === 'food'){ h += todo(TODO.food);
+    } else if (id === 'transport'){ h += p(t.transport) + todo(TODO.transport);
+    } else if (id === 'emergency'){
+      h += '<ul>' + t.emergency.map(function(e){ return '<li>' + esc(e[0]) + ' <a href="tel:' + esc(e[1]) + '">' + esc(e[1]) + '</a></li>'; }).join('') + '</ul>' + todo(TODO.emergency);
+    } else if (id === 'contact'){
+      if (S.hostPhone){
+        var tel = String(S.hostPhone).replace(/[^+\d]/g,'');
+        h += '<p>' + esc(fill(t.contactPhone,{phone:'\u0000'})).replace('\u0000', '<a href="tel:' + esc(tel) + '">' + esc(S.hostPhone) + '</a>') + '</p>';
+      } else h += p(t.contact);
+    } else if (id === 'checkout'){
+      if (S.checkout) h += p(fill(t.checkout,{checkout:S.checkout}));
+      h += todo(TODO.checkout) + p(t.thanks);
+    }
+    return h;
+  }
+  var ORDER = ['arrival','tv','trash','parking','guestcard','walks','food','transport','emergency','contact','checkout'];
+
+  function render(){
+    var S = state.settings || {};
+    var stay = currentStay(state.stays);
+    var names = qs.nom ? namesOf({name: qs.nom}) : (stay ? namesOf(stay) : []);
+    var lang = manualLang || (stay && LANGS.indexOf(stay.lang) >= 0 ? stay.lang : browserLang());
+    var t = T[lang];
+    document.documentElement.lang = lang;
+    var shown = joinNames(names, lang);
+    var w = names.length ? ((names.length > 1 && t.welcomeNamedPlural) ? t.welcomeNamedPlural : t.welcomeNamed) : t.welcomeAnon;
+    var h = '<div class="wrap">';
+    h += '<header class="top"><div class="brand">Cosy Nest</div><div class="right">' +
+         '<div class="langs" role="group" aria-label="Language">' +
+         LANGS.map(function(l){ return '<button type="button" data-lang="' + l + '" aria-pressed="' + (l === lang) + '" lang="' + l + '">' + T[l].name + '</button>'; }).join('') +
+         '</div></div></header>';
+    h += '<section class="hero"><h1>';
+    if (loading && !names.length) h += esc(t.welcomeAnon[0]) + '<br><span class="skel"></span>';
+    else h += esc(fill(w[0],{name:shown})) + '<br>' + esc(fill(w[1],{name:shown}));
+    h += '</h1>';
+    h += '<p class="intro">' + esc(t.intro) + '</p>';
+    h += '<p class="place">' + esc(t.place) + '</p>';
+    if (stay && !qs.nom){
+      var y = todayISO().slice(0,4);
+      var sameYear = stay.from.slice(0,4) === y && stay.to.slice(0,4) === y;
+      h += '<p class="stay">' + esc(fill(t.stay,{from:fmtDate(stay.from,lang,!sameYear), to:fmtDate(stay.to,lang,!sameYear)})) + '</p>';
+    }
+    h += '<svg class="ridge" viewBox="0 0 360 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M0 34 L42 20 L68 28 L108 7 L138 19 L176 3 L204 17 L242 9 L276 25 L312 13 L360 30"/></svg>';
+    h += '</section>';
+    h += '<section class="card"><h2>Wi\u2011Fi</h2>';
+    if (S.wifiName || S.wifiPass){
+      if (S.wifiName) h += '<div class="kv first"><div><span class="k">' + esc(t.network) + '</span><span class="v" id="wifiName">' + esc(S.wifiName) + '</span></div><button type="button" class="copy" data-copy="wifiName">' + esc(t.copy) + '</button></div>';
+      if (S.wifiPass) h += '<div class="kv' + (S.wifiName ? '' : ' first') + '"><div><span class="k">' + esc(t.password) + '</span><span class="v" id="wifiPass">' + esc(S.wifiPass) + '</span></div><button type="button" class="copy" data-copy="wifiPass">' + esc(t.copy) + '</button></div>';
+    } else if (loading) h += '<div class="kv first"><div><span class="k">' + esc(t.network) + '</span><span class="v"><span class="skel"></span></span></div></div>';
+    else h += todo(TODO.wifi);
+    h += '</section>';
+    h += '<div class="topics">' + ORDER.map(function(id){
+      return '<details class="topic" data-id="' + id + '"><summary>' + esc(t.titles[id]) + '</summary><div class="body">' + sectionBody(id, t, S) + '</div></details>';
+    }).join('') + '</div>';
+    h += '<footer class="bottom">Cosy Nest<br>Zur Gasse 87, 3954 Leukerbad</footer>';
+    h += '</div>';
+    var app = document.getElementById('app');
+    var open = {}; app.querySelectorAll('details.topic[open]').forEach(function(d){ open[d.dataset.id] = true; });
+    app.innerHTML = h;
+    app.querySelectorAll('details.topic').forEach(function(d){ if (open[d.dataset.id]) d.open = true; });
+    wire(lang);
+  }
+
+  function wire(lang){
+    var app = document.getElementById('app');
+    app.querySelectorAll('.langs button').forEach(function(b){
+      b.addEventListener('click', function(){ manualLang = b.dataset.lang; try { sessionStorage.setItem('cn-lang', manualLang); } catch(e){} render(); });
+    });
+    app.querySelectorAll('.copy').forEach(function(b){
+      b.addEventListener('click', function(){
+        var v = document.getElementById(b.dataset.copy).textContent;
+        var done = function(){ var old = b.textContent; b.textContent = T[lang].copied; setTimeout(function(){ b.textContent = old; }, 1600); };
+        try { navigator.clipboard.writeText(v).then(done, function(){ selectText(b.dataset.copy); }); } catch(e){ selectText(b.dataset.copy); }
+      });
+    });
+  }
+  function selectText(id){
+    try { var r = document.createRange(); r.selectNodeContents(document.getElementById(id)); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){}
+  }
+
+  render();
+  var settled = false;
+  function settle(){ if (settled) return; settled = true; loading = false; render(); }
+  setTimeout(settle, 6000);
+  api('GET').then(function(data){
+    if (data && Array.isArray(data.stays)){
+      state = {stays: data.stays, settings: data.settings || {}};
+      try { localStorage.setItem('cn-state', JSON.stringify(state)); } catch(e){}
+    }
+    settle();
+  }, function(){ settle(); });
+})();
+</script>
+</body>
+</html>

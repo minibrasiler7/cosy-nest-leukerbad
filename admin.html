@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Cosy Nest – Espace hôte</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%91%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<script>
+(function(){
+  var T = {fr:{and:'et'}};
+
+  var LANGS = ['fr','de','en','it','es'];
+  var LOCALE = {fr:'fr-CH', de:'de-CH', en:'en-GB', it:'it-CH', es:'es-ES'};
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fill(tpl, vars){ return tpl.replace(/\{(\w+)\}/g, function(m,k){ return vars[k] != null ? vars[k] : m; }); }
+  function todayISO(){
+    try { return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+    catch(e){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  }
+  function fmtDate(iso, lang, withYear){
+    try {
+      var p = String(iso).split('-'); var d = new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
+      var o = {day:'numeric', month:'long', timeZone:'UTC'}; if (withYear) o.year = 'numeric';
+      return new Intl.DateTimeFormat(LOCALE[lang] || 'fr-CH', o).format(d);
+    } catch(e){ return iso; }
+  }
+  function namesOf(s){ var n = Array.isArray(s.names) ? s.names : String(s.name || '').split(/\s*[,;]\s*/); return n.map(function(x){ return String(x).trim(); }).filter(Boolean); }
+  function joinNames(names, lang){
+    var conj = (T[lang] && T[lang].and) || 'et';
+    if (names.length <= 1) return names[0] || '';
+    if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
+    return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
+  }
+  function currentStay(stays){
+    var today = todayISO();
+    return (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; })
+      .sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  }
+  function api(method, body){
+    var url = (window.CN_CONFIG && window.CN_CONFIG.api) || '';
+    if (!url) return Promise.reject({code:'no_api'});
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 15000);
+    var opts = {method:method, redirect:'follow', cache:'no-store'};
+    if (ctrl) opts.signal = ctrl.signal;
+    if (method === 'POST'){ opts.body = JSON.stringify(body || {}); opts.headers = {'Content-Type':'text/plain;charset=utf-8'}; }
+    var u = method === 'GET' ? url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now() : url;
+    return fetch(u, opts).then(function(r){ return r.text(); }).then(function(txt){
+      clearTimeout(timer);
+      try { return JSON.parse(txt); } catch(e){ throw {code:'bad_response'}; }
+    }, function(e){ clearTimeout(timer); throw {code: (e && e.name === 'AbortError') ? 'timeout' : 'network'}; });
+  }
+
+  var LANG_LABEL = {auto:'Auto (langue du téléphone)', fr:'Français', de:'Allemand', en:'Anglais', it:'Italien', es:'Espagnol'};
+  var app = document.getElementById('app');
+  var password = null, state = null, draft = null;
+  try { password = sessionStorage.getItem('cn-pass'); } catch(e){}
+
+  function head(){
+    return '<header class="top"><div class="brand">Cosy Nest</div><a class="plain" href="index.html">Voir la page voyageurs</a></header>';
+  }
+
+  function renderNoApi(){
+    app.innerHTML = head() + '<section class="login"><h1>Espace hôte</h1><p>L\u2019espace hôte n\u2019est pas encore relié au script Google.</p>' +
+      '<p>Suivez les étapes du fichier README du dépôt GitHub, puis collez l\u2019adresse du script dans <code>config.js</code>.</p></section>';
+  }
+
+  function renderLogin(msg){
+    app.innerHTML = head() + '<section class="login"><h1>Espace hôte</h1><p>Entrez le mot de passe pour gérer les séjours et les réglages.</p>' +
+      '<div class="field"><label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password"></div>' +
+      '<button type="button" class="btn primary" id="loginBtn">Se connecter</button> <span class="status' + (msg ? ' err' : '') + '" id="loginStatus">' + esc(msg || '') + '</span></section>';
+    var pw = document.getElementById('pw');
+    pw.focus();
+    function go(){ login(pw.value); }
+    document.getElementById('loginBtn').addEventListener('click', go);
+    pw.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
+  }
+
+  function login(pw){
+    var st = document.getElementById('loginStatus'), btn = document.getElementById('loginBtn');
+    if (!pw){ st.textContent = 'Mot de passe manquant.'; st.className = 'status err'; return; }
+    if (btn) btn.disabled = true; if (st){ st.className = 'status'; st.textContent = 'Connexion…'; }
+    api('POST', {action:'login', password: pw}).then(function(r){
+      if (r && r.ok){ password = pw; try { sessionStorage.setItem('cn-pass', pw); } catch(e){} state = r.state; draft = JSON.parse(JSON.stringify(state)); renderAdmin(); }
+      else { try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(r && r.error === 'bad_password' ? 'Mot de passe incorrect.' : 'Réponse inattendue du script.'); }
+    }, function(e){
+      renderLogin(e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Connexion impossible. Vérifiez l\u2019adresse du script dans config.js.');
+    });
+  }
+
+  function renderAdmin(){
+    var today = todayISO();
+    var cur = currentStay(draft.stays);
+    var sorted = draft.stays.slice().sort(function(a,b){ return a.from < b.from ? -1 : 1; });
+    var s = draft.settings || {};
+    var h = head();
+    h += '<div class="topbar"><h1 class="adm" style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
+    h += '<section class="card adm"><h3>Séjours</h3>';
+    h += '<p class="hint">La page affiche les prénoms du séjour qui couvre la date du jour (heure suisse). Sans séjour enregistré, l\u2019accueil s\u2019affiche sans prénom. Les séjours terminés depuis plus de 60 jours sont supprimés à l\u2019enregistrement.</p>';
+    h += '<p class="now">Aujourd\u2019hui (' + esc(fmtDate(today,'fr',true)) + ') : ' + (cur ? '<b>' + esc(joinNames(namesOf(cur),'fr')) + '</b>, ' + esc(LANG_LABEL[cur.lang] || 'Auto') : 'aucun séjour, accueil sans prénom') + '</p>';
+    h += '<table><thead><tr><th>Prénoms</th><th>Langue</th><th>Arrivée</th><th>Départ</th><th></th></tr></thead><tbody>';
+    if (!sorted.length) h += '<tr><td colspan="5" class="hint">Aucun séjour enregistré.</td></tr>';
+    sorted.forEach(function(st){
+      var i = draft.stays.indexOf(st);
+      h += '<tr><td><b>' + esc(namesOf(st).join(', ')) + '</b></td><td>' + esc((st.lang || 'auto') === 'auto' ? 'Auto' : st.lang.toUpperCase()) + '</td><td>' + esc(fmtDate(st.from,'fr',false)) + '</td><td>' + esc(fmtDate(st.to,'fr',false)) + '</td><td><button type="button" class="x" data-del="' + i + '" aria-label="Supprimer">×</button></td></tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div class="grid">' +
+      '<div class="full"><label for="nNames">Prénoms (séparés par une virgule)</label><input id="nNames" autocomplete="off" placeholder="Marie, Thomas"></div>' +
+      '<div class="full"><label for="nLang">Langue</label><select id="nLang">' + Object.keys(LANG_LABEL).map(function(k){ return '<option value="' + k + '">' + esc(LANG_LABEL[k]) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label for="nFrom">Arrivée</label><input id="nFrom" type="date"></div>' +
+      '<div><label for="nTo">Départ</label><input id="nTo" type="date"></div>' +
+      '<div class="full"><button type="button" class="btn" id="admAdd">Ajouter le séjour</button> <span class="status" id="addStatus"></span></div>' +
+      '</div></section>';
+    h += '<section class="card adm"><h3>Réglages</h3><div class="grid">' +
+      '<div><label for="sWifiName">Wi\u2011Fi : nom du réseau</label><input id="sWifiName" value="' + esc(s.wifiName) + '" autocomplete="off"></div>' +
+      '<div><label for="sWifiPass">Wi\u2011Fi : mot de passe</label><input id="sWifiPass" value="' + esc(s.wifiPass) + '" autocomplete="off"></div>' +
+      '<div><label for="sCheckin">Arrivée dès</label><input id="sCheckin" value="' + esc(s.checkin) + '" placeholder="15:00"></div>' +
+      '<div><label for="sCheckout">Départ jusqu\u2019à</label><input id="sCheckout" value="' + esc(s.checkout) + '" placeholder="10:00"></div>' +
+      '<div><label for="sPhone">Téléphone affiché aux voyageurs</label><input id="sPhone" value="' + esc(s.hostPhone) + '" placeholder="+41 79 000 00 00"></div>' +
+      '<div><label for="sSpot">Place de parc</label><input id="sSpot" value="' + esc(s.parkingSpot) + '" placeholder="n° 14"></div>' +
+      '</div></section>';
+    h += '<div class="foot"><span class="status" id="admStatus"></span><button type="button" class="btn primary" id="admSave">Enregistrer</button></div>';
+    app.innerHTML = h;
+
+    document.getElementById('logout').addEventListener('click', function(){ password = null; try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(); });
+    app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){ readSettings(); draft.stays.splice(+b.dataset.del, 1); renderAdmin(); }); });
+    document.getElementById('admAdd').addEventListener('click', function(){
+      var names = namesOf({name: document.getElementById('nNames').value}), from = document.getElementById('nFrom').value, to = document.getElementById('nTo').value, l = document.getElementById('nLang').value;
+      var st = document.getElementById('addStatus');
+      if (!names.length || !from || !to){ st.textContent = 'Prénom, arrivée et départ sont obligatoires.'; st.className = 'status err'; return; }
+      if (to < from){ st.textContent = 'La date de départ précède l\u2019arrivée.'; st.className = 'status err'; return; }
+      readSettings();
+      draft.stays.push({names:names, lang:l, from:from, to:to});
+      renderAdmin();
+    });
+    document.getElementById('admSave').addEventListener('click', save);
+  }
+
+  function readSettings(){
+    draft.settings = {
+      wifiName: document.getElementById('sWifiName').value.trim(),
+      wifiPass: document.getElementById('sWifiPass').value.trim(),
+      checkin: document.getElementById('sCheckin').value.trim(),
+      checkout: document.getElementById('sCheckout').value.trim(),
+      hostPhone: document.getElementById('sPhone').value.trim(),
+      parkingSpot: document.getElementById('sSpot').value.trim()
+    };
+  }
+
+  function save(){
+    readSettings();
+    var st = document.getElementById('admStatus'), btn = document.getElementById('admSave');
+    var limit = new Date(); limit.setUTCDate(limit.getUTCDate() - 60); var lim = limit.toISOString().slice(0,10);
+    draft.stays = draft.stays.filter(function(s){ return s.to >= lim; }).sort(function(a,b){ return a.from < b.from ? -1 : 1; });
+    btn.disabled = true; st.className = 'status'; st.textContent = 'Enregistrement…';
+    api('POST', {action:'save', password: password, state: draft}).then(function(r){
+      btn.disabled = false;
+      if (r && r.ok){ state = r.state || draft; draft = JSON.parse(JSON.stringify(state)); renderAdmin(); var s2 = document.getElementById('admStatus'); s2.textContent = 'Enregistré. La page voyageurs est à jour.'; }
+      else if (r && r.error === 'bad_password'){ try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin('Session expirée, reconnectez-vous.'); }
+      else { st.className = 'status err'; st.textContent = 'Réponse inattendue du script.'; }
+    }, function(e){
+      btn.disabled = false; st.className = 'status err';
+      st.textContent = e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Enregistrement impossible. Vérifiez la connexion.';
+    });
+  }
+
+  if (!(window.CN_CONFIG && window.CN_CONFIG.api)) renderNoApi();
+  else if (password) { renderLogin(); document.getElementById('loginStatus').textContent = 'Connexion…'; login(password); }
+  else renderLogin();
+})();
+</script>
+</body>
+</html>
