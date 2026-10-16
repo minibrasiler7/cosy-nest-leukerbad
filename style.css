@@ -29,9 +29,9 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:.75
 .langs{display:flex;gap:.25rem;flex-wrap:wrap;justify-content:flex-end}
 .langs button{font:inherit;font-size:.8rem;font-weight:700;padding:.3rem .55rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
 .langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.hero h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(2.5rem,10.5vw,3.8rem);line-height:1.02;letter-spacing:-.015em;margin:0 0 1.1rem;font-variation-settings:"opsz" 120}
+.hero h1{font-family:Caveat,"Segoe Script","Bradley Hand",cursive;font-weight:600;font-size:clamp(3.1rem,13vw,4.6rem);line-height:.98;letter-spacing:0;margin:0 0 .9rem}
 .hero p{margin:.3rem 0}
-.hero .intro{max-width:32rem}
+.hero .intro{max-width:32rem;font-family:Caveat,"Segoe Script","Bradley Hand",cursive;font-size:1.6rem;line-height:1.25}
 .hero .place{color:var(--muted)}
 .hero .stay{font-weight:700}
 .ridge{display:block;width:100%;height:auto;margin:1.6rem 0 1.4rem;color:var(--accent);opacity:.8}

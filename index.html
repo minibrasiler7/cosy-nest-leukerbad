@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Caveat:wght@500;600&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
 </head>
@@ -177,11 +177,21 @@
     if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
     return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
   }
-  function currentStay(stays){
-    var today = todayISO();
-    return (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; })
-      .sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  function zurichHour(){
+    try { return parseInt(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'numeric',hourCycle:'h23'}).format(new Date()), 10) || 0; }
+    catch(e){ return new Date().getHours(); }
   }
+  function pickStay(stays, today, hour){
+    var c = (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; });
+    if (c.length > 1){
+      var leaving = c.filter(function(s){ return s.to === today; });
+      var arriving = c.filter(function(s){ return s.from === today; });
+      if (hour < 12 && leaving.length) return leaving[0];
+      if (hour >= 12 && arriving.length) return arriving[0];
+    }
+    return c.sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  }
+  function currentStay(stays){ return pickStay(stays, todayISO(), zurichHour()); }
   function api(method, body){
     var url = (window.CN_CONFIG && window.CN_CONFIG.api) || '';
     if (!url) return Promise.reject({code:'no_api'});

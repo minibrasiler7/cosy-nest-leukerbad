@@ -40,11 +40,21 @@
     if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
     return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
   }
-  function currentStay(stays){
-    var today = todayISO();
-    return (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; })
-      .sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  function zurichHour(){
+    try { return parseInt(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'numeric',hourCycle:'h23'}).format(new Date()), 10) || 0; }
+    catch(e){ return new Date().getHours(); }
   }
+  function pickStay(stays, today, hour){
+    var c = (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; });
+    if (c.length > 1){
+      var leaving = c.filter(function(s){ return s.to === today; });
+      var arriving = c.filter(function(s){ return s.from === today; });
+      if (hour < 12 && leaving.length) return leaving[0];
+      if (hour >= 12 && arriving.length) return arriving[0];
+    }
+    return c.sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
+  }
+  function currentStay(stays){ return pickStay(stays, todayISO(), zurichHour()); }
   function api(method, body){
     var url = (window.CN_CONFIG && window.CN_CONFIG.api) || '';
     if (!url) return Promise.reject({code:'no_api'});
@@ -105,7 +115,7 @@
     var h = head();
     h += '<div class="topbar"><h1 class="adm" style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
     h += '<section class="card adm"><h3>Séjours</h3>';
-    h += '<p class="hint">La page affiche les prénoms du séjour qui couvre la date du jour (heure suisse). Sans séjour enregistré, l\u2019accueil s\u2019affiche sans prénom. Les séjours terminés depuis plus de 60 jours sont supprimés à l\u2019enregistrement.</p>';
+    h += '<p class="hint">La page affiche les prénoms du séjour qui couvre la date du jour (heure suisse). Le jour d\u2019un changement de voyageurs, le séjour qui se termine reste affiché jusqu\u2019à midi, puis le nouveau séjour prend le relais. Sans séjour enregistré, l\u2019accueil s\u2019affiche sans prénom. Les séjours terminés depuis plus de 60 jours sont supprimés à l\u2019enregistrement.</p>';
     h += '<p class="now">Aujourd\u2019hui (' + esc(fmtDate(today,'fr',true)) + ') : ' + (cur ? '<b>' + esc(joinNames(namesOf(cur),'fr')) + '</b>, ' + esc(LANG_LABEL[cur.lang] || 'Auto') : 'aucun séjour, accueil sans prénom') + '</p>';
     h += '<table><thead><tr><th>Prénoms</th><th>Langue</th><th>Arrivée</th><th>Départ</th><th></th></tr></thead><tbody>';
     if (!sorted.length) h += '<tr><td colspan="5" class="hint">Aucun séjour enregistré.</td></tr>';
