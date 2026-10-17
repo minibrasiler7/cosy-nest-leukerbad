@@ -124,9 +124,12 @@ figure.ph figcaption a{color:var(--muted)}
 .lvl{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:.15rem .55rem;border-radius:999px}
 .lvl.easy{background:#DCEFE3;color:#1E5A36}
 .lvl.hard{background:#F6DED6;color:#8A2E14}
+.lvl.medium{background:#F7E7C6;color:#7A4E0E}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lvl.easy{background:#1E3A2A;color:#A8DDBA}:root:not([data-theme="light"]) .lvl.hard{background:#3E2219;color:#F2B9A4}}
 :root[data-theme="dark"] .lvl.easy{background:#1E3A2A;color:#A8DDBA}
 :root[data-theme="dark"] .lvl.hard{background:#3E2219;color:#F2B9A4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lvl.medium{background:#3B2C12;color:#F0CF8E}}
+:root[data-theme="dark"] .lvl.medium{background:#3B2C12;color:#F0CF8E}
 .resto{display:flex;gap:.8rem;align-items:flex-start;padding:.75rem 0;border-top:1px solid var(--line)}
 .resto:first-of-type{border-top:0}
 .resto h3{margin:0 0 .25rem}
