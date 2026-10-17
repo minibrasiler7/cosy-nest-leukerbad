@@ -99,10 +99,10 @@ a.plain{color:var(--water);font-weight:700;text-decoration:none;font-size:.9rem}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-art{filter:brightness(.82)}}
 :root[data-theme="dark"] .hero-art{filter:brightness(.82)}
 .body h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.12rem;margin:1.1rem 0 .4rem}
-.body ol.legend{margin:0 0 .9rem;padding-left:1.4rem}
+.body ol.legend{margin:0 0 .9rem;padding-left:1.9rem}
 .body ol.legend li{margin:0 0 .35rem}
 .remote-wrap{display:flex;justify-content:center;margin:.4rem 0 1rem}
-.remote{width:9.5rem;height:auto}
+.remote{width:min(100%,15rem);height:auto}
 .remote .rb{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
 .remote .bt{fill:var(--bg);stroke:var(--muted);stroke-width:1.2}
 .remote .bt2{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}
