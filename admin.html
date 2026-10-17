@@ -11,180 +11,202 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<style>
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin:0 0 1rem}
+.tabs button{font:inherit;font-weight:700;font-size:.9rem;padding:.5rem .85rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stay{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.6rem 0;border-top:1px solid var(--line)}
+.stay:first-child{border-top:0}
+.stay b{display:block}
+.stay small{color:var(--muted)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;background:#DCEFE3;color:#1E5A36;margin-left:.3rem;vertical-align:.1em}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 .6rem}
+.cal-head h3{margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.2rem;text-transform:capitalize}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal .dow{font-size:.72rem;font-weight:700;color:var(--muted);text-align:center;padding:.2rem 0}
+.cal .day{min-height:3.4rem;border-radius:6px;background:var(--bg);padding:.2rem;font-size:.7rem;overflow:hidden}
+.cal .day.out{opacity:.35}
+.cal .day.today{outline:2px solid var(--accent);outline-offset:-2px}
+.cal .num{font-weight:700;font-size:.75rem}
+.cal .ev{display:block;margin-top:.15rem;padding:.05rem .2rem;border-radius:4px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:1.3;font-size:.68rem}
+.cal .ev.in{margin-left:35%;border-radius:4px 2px 2px 4px}
+.cal .ev.outd{margin-right:35%;opacity:.55}
+.month{margin:.9rem 0 0;padding:0;list-style:none}
+.month li{display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-top:1px solid var(--line);font-size:.92rem}
+.month i{flex-shrink:0;width:.8rem;height:.8rem;border-radius:3px}
+.legend{font-size:.8rem;color:var(--muted);margin:.6rem 0 0}
+</style>
 </head>
 <body>
 <div id="app" class="wrap"></div>
 <script>
 (function(){
-  var T = {fr:{and:'et'}};
+  var LOCALE = 'fr-CH';
+  var LANG_LABEL = {auto:'Auto (langue du téléphone)', fr:'Français', de:'Allemand', en:'Anglais', it:'Italien', es:'Espagnol'};
+  var COLORS = ['#2F6F79','#B8792A','#6B4E9B','#3E7D4E','#A4483B','#3D5A99','#8A6D1F'];
+  var app = document.getElementById('app');
+  var password = null, state = {stays:[], settings:{}}, tab = 'list', calMonth = null, busy = false;
+  try { password = sessionStorage.getItem('cn-pass'); } catch(e){}
+  try { tab = sessionStorage.getItem('cn-tab') || 'list'; } catch(e){}
 
-  var LANGS = ['fr','de','en','it','es'];
-  var LOCALE = {fr:'fr-CH', de:'de-CH', en:'en-GB', it:'it-CH', es:'es-ES'};
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function fill(tpl, vars){ return tpl.replace(/\{(\w+)\}/g, function(m,k){ return vars[k] != null ? vars[k] : m; }); }
   function todayISO(){
     try { return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
     catch(e){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   }
-  function fmtDate(iso, lang, withYear){
-    try {
-      var p = String(iso).split('-'); var d = new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
-      var o = {day:'numeric', month:'long', timeZone:'UTC'}; if (withYear) o.year = 'numeric';
-      return new Intl.DateTimeFormat(LOCALE[lang] || 'fr-CH', o).format(d);
-    } catch(e){ return iso; }
-  }
+  function d2(iso){ var p = String(iso).split('-'); return new Date(Date.UTC(+p[0], +p[1]-1, +p[2])); }
+  function iso(d){ return d.toISOString().slice(0,10); }
+  function fmt(isoS, opt){ try { return new Intl.DateTimeFormat(LOCALE, Object.assign({timeZone:'UTC'}, opt || {weekday:'short', day:'numeric', month:'long'})).format(d2(isoS)); } catch(e){ return isoS; } }
+  function nights(s){ return Math.round((d2(s.to) - d2(s.from)) / 86400000); }
   function namesOf(s){ var n = Array.isArray(s.names) ? s.names : String(s.name || '').split(/\s*[,;]\s*/); return n.map(function(x){ return String(x).trim(); }).filter(Boolean); }
-  function joinNames(names, lang){
-    var conj = (T[lang] && T[lang].and) || 'et';
-    if (names.length <= 1) return names[0] || '';
-    if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
-    return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
-  }
-  function zurichHour(){
-    try { return parseInt(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'numeric',hourCycle:'h23'}).format(new Date()), 10) || 0; }
-    catch(e){ return new Date().getHours(); }
-  }
-  function pickStay(stays, today, hour){
-    var c = (stays || []).filter(function(s){ return s.from && s.to && s.from <= today && today <= s.to; });
-    if (c.length > 1){
-      var leaving = c.filter(function(s){ return s.to === today; });
-      var arriving = c.filter(function(s){ return s.from === today; });
-      if (hour < 12 && leaving.length) return leaving[0];
-      if (hour >= 12 && arriving.length) return arriving[0];
-    }
-    return c.sort(function(a,b){ return a.from < b.from ? 1 : -1; })[0] || null;
-  }
-  function currentStay(stays){ return pickStay(stays, todayISO(), zurichHour()); }
+  function sorted(){ return state.stays.slice().sort(function(a,b){ return a.from < b.from ? -1 : a.from > b.from ? 1 : 0; }); }
+  function colorOf(s){ var i = sorted().indexOf(s); return COLORS[(i < 0 ? 0 : i) % COLORS.length]; }
+
   function api(method, body){
     var url = (window.CN_CONFIG && window.CN_CONFIG.api) || '';
     if (!url) return Promise.reject({code:'no_api'});
     var ctrl = ('AbortController' in window) ? new AbortController() : null;
-    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 15000);
+    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 20000);
     var opts = {method:method, redirect:'follow', cache:'no-store'};
     if (ctrl) opts.signal = ctrl.signal;
     if (method === 'POST'){ opts.body = JSON.stringify(body || {}); opts.headers = {'Content-Type':'text/plain;charset=utf-8'}; }
-    var u = method === 'GET' ? url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now() : url;
-    return fetch(u, opts).then(function(r){ return r.text(); }).then(function(txt){
+    return fetch(url, opts).then(function(r){ return r.text(); }).then(function(txt){
       clearTimeout(timer);
       try { return JSON.parse(txt); } catch(e){ throw {code:'bad_response'}; }
     }, function(e){ clearTimeout(timer); throw {code: (e && e.name === 'AbortError') ? 'timeout' : 'network'}; });
   }
 
-  var LANG_LABEL = {auto:'Auto (langue du téléphone)', fr:'Français', de:'Allemand', en:'Anglais', it:'Italien', es:'Espagnol'};
-  var app = document.getElementById('app');
-  var password = null, state = null, draft = null;
-  try { password = sessionStorage.getItem('cn-pass'); } catch(e){}
-
-  function head(){
-    return '<header class="top"><div class="brand">Cosy Nest</div><a class="plain" href="index.html">Voir la page voyageurs</a></header>';
-  }
-
-  function renderNoApi(){
-    app.innerHTML = head() + '<section class="login"><h1>Espace hôte</h1><p>L\u2019espace hôte n\u2019est pas encore relié au script Google.</p>' +
-      '<p>Suivez les étapes du fichier README du dépôt GitHub, puis collez l\u2019adresse du script dans <code>config.js</code>.</p></section>';
-  }
+  function head(){ return '<header class="top"><div class="brand">Cosy Nest</div><a class="plain" href="index.html">Voir la page voyageurs</a></header>'; }
 
   function renderLogin(msg){
     app.innerHTML = head() + '<section class="login"><h1>Espace hôte</h1><p>Entrez le mot de passe pour gérer les séjours et les réglages.</p>' +
       '<div class="field"><label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password"></div>' +
       '<button type="button" class="btn primary" id="loginBtn">Se connecter</button> <span class="status' + (msg ? ' err' : '') + '" id="loginStatus">' + esc(msg || '') + '</span></section>';
-    var pw = document.getElementById('pw');
-    pw.focus();
+    var pw = document.getElementById('pw'); pw.focus();
     function go(){ login(pw.value); }
     document.getElementById('loginBtn').addEventListener('click', go);
     pw.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
   }
-
   function login(pw){
-    var st = document.getElementById('loginStatus'), btn = document.getElementById('loginBtn');
+    var st = document.getElementById('loginStatus');
     if (!pw){ st.textContent = 'Mot de passe manquant.'; st.className = 'status err'; return; }
-    if (btn) btn.disabled = true; if (st){ st.className = 'status'; st.textContent = 'Connexion…'; }
+    st.className = 'status'; st.textContent = 'Connexion…';
     api('POST', {action:'login', password: pw}).then(function(r){
-      if (r && r.ok){ password = pw; try { sessionStorage.setItem('cn-pass', pw); } catch(e){} state = r.state; draft = JSON.parse(JSON.stringify(state)); renderAdmin(); }
+      if (r && r.ok){ password = pw; try { sessionStorage.setItem('cn-pass', pw); } catch(e){} state = r.state || state; render(); }
       else { try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(r && r.error === 'bad_password' ? 'Mot de passe incorrect.' : 'Réponse inattendue du script.'); }
-    }, function(e){
-      renderLogin(e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Connexion impossible. Vérifiez l\u2019adresse du script dans config.js.');
-    });
+    }, function(e){ renderLogin(e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Connexion impossible.'); });
   }
 
-  function renderAdmin(){
+  function save(newState, okMsg){
+    if (busy) return; busy = true; setStatus('Enregistrement…', false);
+    var limit = new Date(); limit.setUTCDate(limit.getUTCDate() - 60); var lim = iso(limit);
+    newState.stays = newState.stays.filter(function(s){ return s.to >= lim; });
+    api('POST', {action:'save', password: password, state: newState}).then(function(r){
+      busy = false;
+      if (r && r.ok){ state = r.state || newState; render(); setStatus(okMsg || 'Enregistré.', false); }
+      else if (r && r.error === 'bad_password'){ try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin('Session expirée, reconnectez-vous.'); }
+      else setStatus('Réponse inattendue du script. Rien n’a été enregistré.', true);
+    }, function(){ busy = false; setStatus('Enregistrement impossible. Vérifiez la connexion et réessayez.', true); });
+  }
+  function setStatus(msg, err){ var el = document.getElementById('admStatus'); if (el){ el.textContent = msg; el.className = 'status' + (err ? ' err' : ''); } }
+
+  function stayRow(s, i){
+    var today = todayISO(), cur = s.from <= today && today <= s.to;
+    return '<div class="stay"><div><b>' + esc(namesOf(s).join(', ')) + (cur ? '<span class="tag">en cours</span>' : '') + '</b>' +
+      '<small>' + esc(fmt(s.from)) + ' → ' + esc(fmt(s.to)) + ' · ' + nights(s) + ' nuit' + (nights(s) > 1 ? 's' : '') + ' · ' + esc((s.lang || 'auto') === 'auto' ? 'langue auto' : LANG_LABEL[s.lang]) + '</small></div>' +
+      '<button type="button" class="btn" data-del="' + i + '" aria-label="Supprimer">Supprimer</button></div>';
+  }
+
+  function viewList(){
     var today = todayISO();
-    var cur = currentStay(draft.stays);
-    var sorted = draft.stays.slice().sort(function(a,b){ return a.from < b.from ? -1 : 1; });
-    var s = draft.settings || {};
-    var h = head();
-    h += '<div class="topbar"><h1 class="adm" style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
-    h += '<section class="card adm"><h3>Séjours</h3>';
-    h += '<p class="hint">La page affiche les prénoms du séjour qui couvre la date du jour (heure suisse). Le jour d\u2019un changement de voyageurs, le séjour qui se termine reste affiché jusqu\u2019à midi, puis le nouveau séjour prend le relais. Sans séjour enregistré, l\u2019accueil s\u2019affiche sans prénom. Les séjours terminés depuis plus de 60 jours sont supprimés à l\u2019enregistrement.</p>';
-    h += '<p class="now">Aujourd\u2019hui (' + esc(fmtDate(today,'fr',true)) + ') : ' + (cur ? '<b>' + esc(joinNames(namesOf(cur),'fr')) + '</b>, ' + esc(LANG_LABEL[cur.lang] || 'Auto') : 'aucun séjour, accueil sans prénom') + '</p>';
-    h += '<table><thead><tr><th>Prénoms</th><th>Langue</th><th>Arrivée</th><th>Départ</th><th></th></tr></thead><tbody>';
-    if (!sorted.length) h += '<tr><td colspan="5" class="hint">Aucun séjour enregistré.</td></tr>';
-    sorted.forEach(function(st){
-      var i = draft.stays.indexOf(st);
-      h += '<tr><td><b>' + esc(namesOf(st).join(', ')) + '</b></td><td>' + esc((st.lang || 'auto') === 'auto' ? 'Auto' : st.lang.toUpperCase()) + '</td><td>' + esc(fmtDate(st.from,'fr',false)) + '</td><td>' + esc(fmtDate(st.to,'fr',false)) + '</td><td><button type="button" class="x" data-del="' + i + '" aria-label="Supprimer">×</button></td></tr>';
-    });
-    h += '</tbody></table>';
-    h += '<div class="grid">' +
+    var list = sorted().filter(function(s){ return s.to >= today; });
+    var past = sorted().filter(function(s){ return s.to < today; });
+    var h = '<section class="card adm"><h3>Séjours en cours et à venir (' + list.length + ')</h3>';
+    h += list.length ? list.map(function(s){ return stayRow(s, state.stays.indexOf(s)); }).join('') : '<p class="hint">Aucun séjour à venir. Ajoutez-en un dans l’onglet « Ajouter ».</p>';
+    h += '</section>';
+    if (past.length) h += '<section class="card adm"><h3>Séjours passés (60 derniers jours)</h3>' + past.reverse().map(function(s){ return stayRow(s, state.stays.indexOf(s)); }).join('') + '</section>';
+    return h;
+  }
+  function viewAdd(){
+    return '<section class="card adm"><h3>Ajouter un séjour</h3><p class="hint">Le séjour est enregistré dès que vous cliquez sur « Ajouter ». Le jour d’un changement, le séjour qui se termine reste affiché jusqu’à midi.</p><div class="grid">' +
       '<div class="full"><label for="nNames">Prénoms (séparés par une virgule)</label><input id="nNames" autocomplete="off" placeholder="Marie, Thomas"></div>' +
       '<div class="full"><label for="nLang">Langue</label><select id="nLang">' + Object.keys(LANG_LABEL).map(function(k){ return '<option value="' + k + '">' + esc(LANG_LABEL[k]) + '</option>'; }).join('') + '</select></div>' +
       '<div><label for="nFrom">Arrivée</label><input id="nFrom" type="date"></div>' +
       '<div><label for="nTo">Départ</label><input id="nTo" type="date"></div>' +
-      '<div class="full"><button type="button" class="btn" id="admAdd">Ajouter le séjour</button> <span class="status" id="addStatus"></span></div>' +
-      '</div></section>';
-    h += '<section class="card adm"><h3>Réglages</h3><div class="grid">' +
+      '<div class="full"><button type="button" class="btn primary" id="admAdd">Ajouter</button></div></div></section>';
+  }
+  function viewCal(){
+    var t = todayISO();
+    if (!calMonth) calMonth = t.slice(0,7);
+    var first = d2(calMonth + '-01'), y = first.getUTCFullYear(), m = first.getUTCMonth();
+    var start = new Date(first); start.setUTCDate(1 - ((first.getUTCDay() + 6) % 7));
+    var title = new Intl.DateTimeFormat(LOCALE, {month:'long', year:'numeric', timeZone:'UTC'}).format(first);
+    var h = '<section class="card adm"><div class="cal-head"><button type="button" class="btn" id="calPrev" aria-label="Mois précédent">‹</button><h3>' + esc(title) + '</h3><button type="button" class="btn" id="calNext" aria-label="Mois suivant">›</button></div><div class="cal">';
+    h += ['lu','ma','me','je','ve','sa','di'].map(function(x){ return '<div class="dow">' + x + '</div>'; }).join('');
+    var st = sorted();
+    for (var i = 0; i < 42; i++){
+      var d = new Date(start); d.setUTCDate(start.getUTCDate() + i); var ds = iso(d);
+      var evs = st.filter(function(s){ return s.from <= ds && ds <= s.to; });
+      h += '<div class="day' + (d.getUTCMonth() !== m ? ' out' : '') + (ds === t ? ' today' : '') + '"><span class="num">' + d.getUTCDate() + '</span>' +
+        evs.map(function(s){ var cls = s.from === ds ? ' in' : (s.to === ds ? ' outd' : ''); return '<span class="ev' + cls + '" style="background:' + colorOf(s) + '" title="' + esc(namesOf(s).join(', ')) + '">' + esc(namesOf(s)[0]) + '</span>'; }).join('') + '</div>';
+      if (i >= 34 && d.getUTCMonth() !== m) break;
+    }
+    var mStart = calMonth + '-01', mEnd = iso(new Date(Date.UTC(y, m + 1, 0)));
+    var inMonth = st.filter(function(s){ return s.from <= mEnd && s.to >= mStart; });
+    h += '</div><p class="legend">Une barre décalée à droite marque l’arrivée, une barre pâle marque le départ. Le cadre doré indique aujourd’hui.</p>';
+    h += inMonth.length ? '<ul class="month">' + inMonth.map(function(s){ return '<li><i style="background:' + colorOf(s) + '"></i><span><b>' + esc(namesOf(s).join(', ')) + '</b> · ' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</span></li>'; }).join('') + '</ul>' : '<p class="hint" style="margin-top:.8rem">Aucun séjour ce mois-ci.</p>';
+    h += '</section>';
+    return h;
+  }
+  function viewSettings(){
+    var s = state.settings || {};
+    return '<section class="card adm"><h3>Réglages</h3><div class="grid">' +
       '<div><label for="sWifiName">Wi\u2011Fi : nom du réseau</label><input id="sWifiName" value="' + esc(s.wifiName) + '" autocomplete="off"></div>' +
       '<div><label for="sWifiPass">Wi\u2011Fi : mot de passe</label><input id="sWifiPass" value="' + esc(s.wifiPass) + '" autocomplete="off"></div>' +
       '<div><label for="sCheckin">Arrivée dès</label><input id="sCheckin" value="' + esc(s.checkin) + '" placeholder="15:00"></div>' +
-      '<div><label for="sCheckout">Départ jusqu\u2019à</label><input id="sCheckout" value="' + esc(s.checkout) + '" placeholder="10:00"></div>' +
+      '<div><label for="sCheckout">Départ jusqu’à</label><input id="sCheckout" value="' + esc(s.checkout) + '" placeholder="11:00"></div>' +
       '<div><label for="sPhone">Téléphone affiché aux voyageurs</label><input id="sPhone" value="' + esc(s.hostPhone) + '" placeholder="+41 79 000 00 00"></div>' +
-      '<div><label for="sSpot">Place de parc</label><input id="sSpot" value="' + esc(s.parkingSpot) + '" placeholder="n° 14"></div>' +
-      '</div></section>';
-    h += '<div class="foot"><span class="status" id="admStatus"></span><button type="button" class="btn primary" id="admSave">Enregistrer</button></div>';
+      '<div><label for="sSpot">Place de parc</label><input id="sSpot" value="' + esc(s.parkingSpot) + '"></div>' +
+      '<div class="full"><button type="button" class="btn primary" id="sSave">Enregistrer les réglages</button></div></div></section>';
+  }
+
+  function render(){
+    var tabs = [['list','Séjours'],['cal','Calendrier'],['add','Ajouter'],['set','Réglages']];
+    var h = head() + '<div class="topbar"><h1 style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
+    h += '<div class="tabs" role="tablist">' + tabs.map(function(t){ return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+    h += '<p class="status" id="admStatus" role="status"></p>';
+    h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : viewList();
     app.innerHTML = h;
-
     document.getElementById('logout').addEventListener('click', function(){ password = null; try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(); });
-    app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){ readSettings(); draft.stays.splice(+b.dataset.del, 1); renderAdmin(); }); });
-    document.getElementById('admAdd').addEventListener('click', function(){
+    app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} render(); }); });
+    app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){
+      var s = state.stays[+b.dataset.del]; if (!s) return;
+      if (!confirm('Supprimer le séjour de ' + namesOf(s).join(', ') + ' ?')) return;
+      var ns = {stays: state.stays.filter(function(x, i){ return i !== +b.dataset.del; }), settings: state.settings};
+      save(ns, 'Séjour supprimé.');
+    }); });
+    var add = document.getElementById('admAdd');
+    if (add) add.addEventListener('click', function(){
       var names = namesOf({name: document.getElementById('nNames').value}), from = document.getElementById('nFrom').value, to = document.getElementById('nTo').value, l = document.getElementById('nLang').value;
-      var st = document.getElementById('addStatus');
-      if (!names.length || !from || !to){ st.textContent = 'Prénom, arrivée et départ sont obligatoires.'; st.className = 'status err'; return; }
-      if (to < from){ st.textContent = 'La date de départ précède l\u2019arrivée.'; st.className = 'status err'; return; }
-      readSettings();
-      draft.stays.push({names:names, lang:l, from:from, to:to});
-      renderAdmin();
+      if (!names.length || !from || !to){ setStatus('Prénom, arrivée et départ sont obligatoires.', true); return; }
+      if (to <= from){ setStatus('La date de départ doit être après l’arrivée.', true); return; }
+      var clash = state.stays.filter(function(s){ return s.from < to && from < s.to; });
+      if (clash.length && !confirm('Ce séjour chevauche celui de ' + namesOf(clash[0]).join(', ') + '. Ajouter quand même ?')) return;
+      tab = 'list'; try { sessionStorage.setItem('cn-tab', tab); } catch(e){}
+      save({stays: state.stays.concat([{names:names, lang:l, from:from, to:to}]), settings: state.settings}, 'Séjour ajouté et enregistré.');
     });
-    document.getElementById('admSave').addEventListener('click', save);
-  }
-
-  function readSettings(){
-    draft.settings = {
-      wifiName: document.getElementById('sWifiName').value.trim(),
-      wifiPass: document.getElementById('sWifiPass').value.trim(),
-      checkin: document.getElementById('sCheckin').value.trim(),
-      checkout: document.getElementById('sCheckout').value.trim(),
-      hostPhone: document.getElementById('sPhone').value.trim(),
-      parkingSpot: document.getElementById('sSpot').value.trim()
-    };
-  }
-
-  function save(){
-    readSettings();
-    var st = document.getElementById('admStatus'), btn = document.getElementById('admSave');
-    var limit = new Date(); limit.setUTCDate(limit.getUTCDate() - 60); var lim = limit.toISOString().slice(0,10);
-    draft.stays = draft.stays.filter(function(s){ return s.to >= lim; }).sort(function(a,b){ return a.from < b.from ? -1 : 1; });
-    btn.disabled = true; st.className = 'status'; st.textContent = 'Enregistrement…';
-    api('POST', {action:'save', password: password, state: draft}).then(function(r){
-      btn.disabled = false;
-      if (r && r.ok){ state = r.state || draft; draft = JSON.parse(JSON.stringify(state)); renderAdmin(); var s2 = document.getElementById('admStatus'); s2.textContent = 'Enregistré. La page voyageurs est à jour.'; }
-      else if (r && r.error === 'bad_password'){ try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin('Session expirée, reconnectez-vous.'); }
-      else { st.className = 'status err'; st.textContent = 'Réponse inattendue du script.'; }
-    }, function(e){
-      btn.disabled = false; st.className = 'status err';
-      st.textContent = e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Enregistrement impossible. Vérifiez la connexion.';
+    var ss = document.getElementById('sSave');
+    if (ss) ss.addEventListener('click', function(){
+      var v = function(id){ return document.getElementById(id).value.trim(); };
+      save({stays: state.stays, settings: {wifiName:v('sWifiName'), wifiPass:v('sWifiPass'), checkin:v('sCheckin'), checkout:v('sCheckout'), hostPhone:v('sPhone'), parkingSpot:v('sSpot')}}, 'Réglages enregistrés.');
     });
+    var p = document.getElementById('calPrev'), n = document.getElementById('calNext');
+    function shift(k){ var d = d2(calMonth + '-01'); d.setUTCMonth(d.getUTCMonth() + k); calMonth = iso(d).slice(0,7); render(); }
+    if (p) p.addEventListener('click', function(){ shift(-1); });
+    if (n) n.addEventListener('click', function(){ shift(1); });
   }
 
-  if (!(window.CN_CONFIG && window.CN_CONFIG.api)) renderNoApi();
+  if (!(window.CN_CONFIG && window.CN_CONFIG.api)) app.innerHTML = head() + '<section class="login"><h1>Espace hôte</h1><p>Le script Google n’est pas configuré.</p></section>';
   else if (password) { renderLogin(); document.getElementById('loginStatus').textContent = 'Connexion…'; login(password); }
   else renderLogin();
 })();
