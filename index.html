@@ -9,156 +9,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Caveat:wght@500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
 <script>
 (function(){
-  var T = {
-    fr:{
-      name:'FR', and:'et',
-      welcomeNamed:['Bienvenue,','{name}.'], welcomeAnon:['Bienvenue','au Cosy Nest.'],
-      intro:'Nous vous souhaitons un excellent séjour à Loèche-les-Bains. Tout ce qu\u2019il faut savoir sur le studio et la région se trouve ici.',
-      place:'Studio 14, Haus Adlerhorst, Loèche-les-Bains',
-      stay:'Votre séjour : du {from} au {to}',
-      network:'Réseau', password:'Mot de passe', copy:'Copier', copied:'Copié',
-      titles:{arrival:'Arrivée et départ', tv:'Télévision', trash:'Poubelles et tri', parking:'Parking', guestcard:'Guest Card', walks:'Balades et activités', food:'Restaurants', transport:'Transports', emergency:'Urgences', contact:'Nous contacter', checkout:'Avant de partir'},
-      checkin:'Arrivée dès {checkin}.', checkout:'Départ jusqu\u2019à {checkout}.',
-      spot:'Votre place de parc : {spot}.',
-      trash:'En Valais, les ordures ménagères vont dans les sacs taxés officiels. Le verre, le PET, le papier et l\u2019alu se trient à part.',
-      guestcard:'Chaque voyageur qui paie la taxe de séjour reçoit une carte d\u2019hôte. Elle donne des avantages auprès de partenaires de la station.',
-      walks:[
-        'Gemmi : le téléphérique part du haut du village et monte au col, à plus de 2\u2019300 m. Vue sur les Alpes valaisannes et balade facile jusqu\u2019au lac de Daubensee.',
-        'Torrent : la télécabine mène à la Rinderhütte, point de départ de sentiers panoramiques en été et domaine skiable en hiver.',
-        'Bains thermaux : Leukerbad Therme et Walliser Alpentherme sont à quelques minutes à pied. L\u2019eau sort de la montagne à plus de 50 °C.',
-        'Passerelle des sources thermales : une courte marche le long de la Dala jusqu\u2019aux sources chaudes, dans les gorges au-dessus du village.'
-      ],
-      transport:'Le bus LLB relie Loèche-les-Bains à la gare de Loèche (Leuk) en une trentaine de minutes. De là, trains CFF vers Sion, Brigue et Berne.',
-      emergency:[['Ambulance','144'],['Police','117'],['Pompiers','118'],['Rega, sauvetage aérien','1414'],['Numéro d\u2019urgence européen','112']],
-      contactPhone:'Une question ? Écrivez-nous dans l\u2019application Airbnb ou Booking, ou appelez le {phone}.',
-      contact:'Une question ? Écrivez-nous dans l\u2019application Airbnb ou Booking.',
-      thanks:'Merci pour votre visite. Bon retour !'
-    },
-    de:{
-      name:'DE', and:'und',
-      welcomeNamed:['Willkommen,','{name}.'], welcomeAnon:['Willkommen','im Cosy Nest.'],
-      intro:'Wir wünschen Ihnen einen schönen Aufenthalt in Leukerbad. Alles Wichtige zum Studio und zur Region finden Sie hier.',
-      place:'Studio 14, Haus Adlerhorst, Leukerbad',
-      stay:'Ihr Aufenthalt: {from} bis {to}',
-      network:'Netzwerk', password:'Passwort', copy:'Kopieren', copied:'Kopiert',
-      titles:{arrival:'Ankunft und Abreise', tv:'Fernseher', trash:'Abfall und Recycling', parking:'Parkieren', guestcard:'Guest Card', walks:'Wanderungen und Aktivitäten', food:'Restaurants', transport:'Verkehr', emergency:'Notfall', contact:'Kontakt', checkout:'Vor der Abreise'},
-      checkin:'Check-in ab {checkin}.', checkout:'Check-out bis {checkout}.',
-      spot:'Ihr Parkplatz: {spot}.',
-      trash:'Im Wallis gehört der Hausmüll in die offiziellen Gebührensäcke. Glas, PET, Papier und Alu werden separat gesammelt.',
-      guestcard:'Jeder Gast, der die Kurtaxe bezahlt, erhält eine Gästekarte. Sie bietet Vergünstigungen bei Partnern des Kurorts.',
-      walks:[
-        'Gemmi: Die Luftseilbahn fährt vom oberen Dorfrand auf den Pass auf über 2300 m. Weitblick auf die Walliser Alpen und ein leichter Spaziergang zum Daubensee.',
-        'Torrent: Die Gondelbahn bringt Sie zur Rinderhütte, Ausgangspunkt für Panoramawanderungen im Sommer und Skigebiet im Winter.',
-        'Thermalbäder: Leukerbad Therme und Walliser Alpentherme liegen wenige Gehminuten entfernt. Das Wasser tritt mit über 50 °C aus dem Berg.',
-        'Thermalquellen-Steg: Ein kurzer Weg der Dala entlang zu den heissen Quellen in der Schlucht oberhalb des Dorfs.'
-      ],
-      transport:'Der LLB-Bus verbindet Leukerbad in rund 30 Minuten mit dem Bahnhof Leuk. Von dort fahren SBB-Züge nach Sitten, Brig und Bern.',
-      emergency:[['Sanität','144'],['Polizei','117'],['Feuerwehr','118'],['Rega, Luftrettung','1414'],['Europäische Notrufnummer','112']],
-      contactPhone:'Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App oder rufen Sie an: {phone}.',
-      contact:'Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App.',
-      thanks:'Danke für Ihren Besuch und gute Heimreise!'
-    },
-    en:{
-      name:'EN', and:'and',
-      welcomeNamed:['Welcome,','{name}.'], welcomeAnon:['Welcome','to Cosy Nest.'],
-      intro:'We hope you have a wonderful stay in Leukerbad. Everything you need to know about the studio and the area is here.',
-      place:'Studio 14, Haus Adlerhorst, Leukerbad',
-      stay:'Your stay: {from} to {to}',
-      network:'Network', password:'Password', copy:'Copy', copied:'Copied',
-      titles:{arrival:'Check-in and check-out', tv:'Television', trash:'Rubbish and recycling', parking:'Parking', guestcard:'Guest Card', walks:'Walks and activities', food:'Restaurants', transport:'Getting around', emergency:'Emergencies', contact:'Contact us', checkout:'Before you leave'},
-      checkin:'Check-in from {checkin}.', checkout:'Check-out by {checkout}.',
-      spot:'Your parking space: {spot}.',
-      trash:'In Valais, household waste goes in the official taxed bags. Glass, PET, paper and aluminium are collected separately.',
-      guestcard:'Every guest who pays the tourist tax receives a guest card. It gives you benefits with partners in the resort.',
-      walks:[
-        'Gemmi: the cable car leaves from the top of the village and climbs to the pass at over 2,300 m. Views across the Valais Alps and an easy walk to Lake Daubensee.',
-        'Torrent: the gondola takes you to the Rinderhütte, the starting point for panoramic trails in summer and a ski area in winter.',
-        'Thermal baths: Leukerbad Therme and Walliser Alpentherme are a few minutes\u2019 walk away. The water comes out of the mountain at over 50 °C.',
-        'Thermal springs footbridge: a short walk along the Dala river to the hot springs in the gorge above the village.'
-      ],
-      transport:'The LLB bus links Leukerbad with Leuk railway station in about 30 minutes. From there, SBB trains run to Sion, Brig and Bern.',
-      emergency:[['Ambulance','144'],['Police','117'],['Fire brigade','118'],['Rega air rescue','1414'],['European emergency number','112']],
-      contactPhone:'Any questions? Message us in the Airbnb or Booking app, or call {phone}.',
-      contact:'Any questions? Message us in the Airbnb or Booking app.',
-      thanks:'Thank you for staying with us. Safe travels home!'
-    },
-    it:{
-      name:'IT', and:'e',
-      welcomeNamed:['Un caloroso benvenuto,','{name}.'], welcomeAnon:['Benvenuti','al Cosy Nest.'],
-      intro:'Vi auguriamo un ottimo soggiorno a Leukerbad. Qui trovate tutto quello che c\u2019è da sapere sullo studio e sulla regione.',
-      place:'Studio 14, Haus Adlerhorst, Leukerbad',
-      stay:'Il vostro soggiorno: dal {from} al {to}',
-      network:'Rete', password:'Password', copy:'Copia', copied:'Copiato',
-      titles:{arrival:'Arrivo e partenza', tv:'Televisione', trash:'Rifiuti e raccolta differenziata', parking:'Parcheggio', guestcard:'Guest Card', walks:'Passeggiate e attività', food:'Ristoranti', transport:'Trasporti', emergency:'Emergenze', contact:'Contattarci', checkout:'Prima di partire'},
-      checkin:'Check-in dalle {checkin}.', checkout:'Check-out entro le {checkout}.',
-      spot:'Il vostro posto auto: {spot}.',
-      trash:'In Vallese i rifiuti domestici vanno negli appositi sacchi a pagamento. Vetro, PET, carta e alluminio si raccolgono separatamente.',
-      guestcard:'Ogni ospite che paga la tassa di soggiorno riceve una guest card. Offre vantaggi presso i partner della località.',
-      walks:[
-        'Gemmi: la funivia parte dalla parte alta del paese e sale al passo, a oltre 2300 m. Vista sulle Alpi vallesane e facile passeggiata fino al lago Daubensee.',
-        'Torrent: la cabinovia porta alla Rinderhütte, punto di partenza di sentieri panoramici in estate e comprensorio sciistico in inverno.',
-        'Terme: Leukerbad Therme e Walliser Alpentherme sono a pochi minuti a piedi. L\u2019acqua esce dalla montagna a oltre 50 °C.',
-        'Passerella delle sorgenti termali: una breve camminata lungo la Dala fino alle sorgenti calde, nella gola sopra il paese.'
-      ],
-      transport:'L\u2019autobus LLB collega Leukerbad alla stazione di Leuk in circa 30 minuti. Da lì partono i treni FFS per Sion, Briga e Berna.',
-      emergency:[['Ambulanza','144'],['Polizia','117'],['Pompieri','118'],['Rega, soccorso aereo','1414'],['Numero d\u2019emergenza europeo','112']],
-      contactPhone:'Domande? Scriveteci nell\u2019app Airbnb o Booking, oppure chiamate il {phone}.',
-      contact:'Domande? Scriveteci nell\u2019app Airbnb o Booking.',
-      thanks:'Grazie per il vostro soggiorno e buon viaggio di ritorno!'
-    },
-    es:{
-      name:'ES', and:'y',
-      welcomeNamed:['Le damos la bienvenida,','{name}.'], welcomeNamedPlural:['Les damos la bienvenida,','{name}.'], welcomeAnon:['Bienvenidos','a Cosy Nest.'],
-      intro:'Le deseamos una estancia estupenda en Leukerbad. Aquí encontrará todo lo que hay que saber sobre el estudio y la región.',
-      place:'Estudio 14, Haus Adlerhorst, Leukerbad',
-      stay:'Su estancia: del {from} al {to}',
-      network:'Red', password:'Contraseña', copy:'Copiar', copied:'Copiado',
-      titles:{arrival:'Llegada y salida', tv:'Televisión', trash:'Basura y reciclaje', parking:'Aparcamiento', guestcard:'Guest Card', walks:'Paseos y actividades', food:'Restaurantes', transport:'Transporte', emergency:'Emergencias', contact:'Contacto', checkout:'Antes de irse'},
-      checkin:'Entrada a partir de las {checkin}.', checkout:'Salida antes de las {checkout}.',
-      spot:'Su plaza de aparcamiento: {spot}.',
-      trash:'En el Valais, la basura doméstica va en bolsas oficiales de pago. El vidrio, el PET, el papel y el aluminio se separan.',
-      guestcard:'Cada huésped que paga la tasa turística recibe una guest card. Ofrece ventajas con los socios de la estación.',
-      walks:[
-        'Gemmi: el teleférico sale de la parte alta del pueblo y sube al puerto, a más de 2300 m. Vistas a los Alpes del Valais y un paseo fácil hasta el lago Daubensee.',
-        'Torrent: la telecabina lleva a la Rinderhütte, punto de partida de senderos panorámicos en verano y zona de esquí en invierno.',
-        'Baños termales: Leukerbad Therme y Walliser Alpentherme están a pocos minutos a pie. El agua sale de la montaña a más de 50 °C.',
-        'Pasarela de las fuentes termales: un paseo corto junto al río Dala hasta las fuentes calientes, en la garganta sobre el pueblo.'
-      ],
-      transport:'El autobús LLB une Leukerbad con la estación de Leuk en unos 30 minutos. Desde allí salen trenes SBB a Sion, Brig y Berna.',
-      emergency:[['Ambulancia','144'],['Policía','117'],['Bomberos','118'],['Rega, rescate aéreo','1414'],['Número de emergencia europeo','112']],
-      contactPhone:'¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking, o llame al {phone}.',
-      contact:'¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking.',
-      thanks:'Gracias por su visita. ¡Buen viaje de vuelta!'
-    }
-  };
-
-  /* Notes pour l'hôte (identiques dans toutes les langues, à remplacer par le vrai contenu) */
-  var TODO = {
-    times:'Heure d\u2019arrivée et heure de départ (Espace hôte → Réglages).',
-    keys:'Remise des clés : boîte à clés, code, où déposer les clés au départ.',
-    wifi:'Nom du réseau et mot de passe Wi\u2011Fi (Espace hôte → Réglages).',
-    tv:'Mode d\u2019emploi de la TV : télécommande à utiliser, bouton source/HDMI, accès aux chaînes, Netflix ou YouTube, chaînes en langues étrangères.',
-    trash:'Où se trouvent les poubelles de l\u2019immeuble, où acheter les sacs taxés, emplacement du point de tri, jours de ramassage.',
-    parking:'Place privée ou parking public : nom, distance, tarif, règles en hiver (pneus neige, déneigement).',
-    guestcard:'Comment la carte est remise (envoyée par nous, dans le studio) et liste exacte des avantages (bus local, réductions bains, remontées).',
-    walks:'Vos balades préférées, temps de marche depuis le studio, activités selon la saison.',
-    food:'3 à 5 restaurants recommandés : nom, spécialité, budget, distance, réservation conseillée ou non.',
-    transport:'Arrêt de bus le plus proche du studio et temps de marche.',
-    emergency:'Pharmacie, médecin et hôpital les plus proches.',
-    checkout:'Consignes de départ : vaisselle, poubelles, fenêtres, chauffage, clés.'
-  };
-
-  var LANGS = ['fr','de','en','it','es'];
+  var D = {"ui":{"fr":{"name":"FR","and_":"et","welcomeNamed":["Bienvenue,","{name}."],"welcomeAnon":["Bienvenue","au Cosy Nest."],"intro":"Nous vous souhaitons un excellent séjour à Loèche-les-Bains. Tout ce qu’il faut savoir sur le studio et la région se trouve ici.","place":"Studio 14, Haus Adlerhorst, Loèche-les-Bains","stay":"Votre séjour : du {from} au {to}","network":"Réseau","password":"Mot de passe","copy":"Copier","copied":"Copié","titles":{"arrival":"Arrivée et départ","tv":"Télévision","trash":"Poubelles","parking":"Parking","guestcard":"Guest Card","walks":"Balades","food":"Restaurants","transport":"Transports","emergency":"Urgences","contact":"Nous contacter","checkout":"Avant de partir"},"easy":"Facile","hard":"Difficile","photo":"Photo","map_home":"Cosy Nest (Zur Gasse 87)","map_park":"Parking Sportarena","map_walk":"Chemin à pied","tel":"Tél.","thanks":"Merci pour votre visite. Bon retour !","maps":"Photos et itinéraire"},"de":{"name":"DE","and_":"und","welcomeNamed":["Willkommen,","{name}."],"welcomeAnon":["Willkommen","im Cosy Nest."],"intro":"Wir wünschen Ihnen einen schönen Aufenthalt in Leukerbad. Alles Wichtige zum Studio und zur Region finden Sie hier.","place":"Studio 14, Haus Adlerhorst, Leukerbad","stay":"Ihr Aufenthalt: {from} bis {to}","network":"Netzwerk","password":"Passwort","copy":"Kopieren","copied":"Kopiert","titles":{"arrival":"Ankunft und Abreise","tv":"Fernseher","trash":"Abfall","parking":"Parkieren","guestcard":"Guest Card","walks":"Wanderungen","food":"Restaurants","transport":"Verkehr","emergency":"Notfall","contact":"Kontakt","checkout":"Vor der Abreise"},"easy":"Leicht","hard":"Schwer","photo":"Foto","map_home":"Cosy Nest (Zur Gasse 87)","map_park":"Parkhaus Sportarena","map_walk":"Fussweg","tel":"Tel.","thanks":"Danke für Ihren Besuch und gute Heimreise!","maps":"Fotos und Route"},"en":{"name":"EN","and_":"and","welcomeNamed":["Welcome,","{name}."],"welcomeAnon":["Welcome","to Cosy Nest."],"intro":"We hope you have a wonderful stay in Leukerbad. Everything you need to know about the studio and the area is here.","place":"Studio 14, Haus Adlerhorst, Leukerbad","stay":"Your stay: {from} to {to}","network":"Network","password":"Password","copy":"Copy","copied":"Copied","titles":{"arrival":"Check-in and check-out","tv":"Television","trash":"Rubbish","parking":"Parking","guestcard":"Guest Card","walks":"Walks","food":"Restaurants","transport":"Getting around","emergency":"Emergencies","contact":"Contact us","checkout":"Before you leave"},"easy":"Easy","hard":"Hard","photo":"Photo","map_home":"Cosy Nest (Zur Gasse 87)","map_park":"Sportarena car park","map_walk":"Walking route","tel":"Tel.","thanks":"Thank you for staying with us. Safe travels home!","maps":"Photos and directions"},"it":{"name":"IT","and_":"e","welcomeNamed":["Un caloroso benvenuto,","{name}."],"welcomeAnon":["Benvenuti","al Cosy Nest."],"intro":"Vi auguriamo un ottimo soggiorno a Leukerbad. Qui trovate tutto quello che c’è da sapere sullo studio e sulla regione.","place":"Studio 14, Haus Adlerhorst, Leukerbad","stay":"Il vostro soggiorno: dal {from} al {to}","network":"Rete","password":"Password","copy":"Copia","copied":"Copiato","titles":{"arrival":"Arrivo e partenza","tv":"Televisione","trash":"Rifiuti","parking":"Parcheggio","guestcard":"Guest Card","walks":"Passeggiate","food":"Ristoranti","transport":"Trasporti","emergency":"Emergenze","contact":"Contattarci","checkout":"Prima di partire"},"easy":"Facile","hard":"Difficile","photo":"Foto","map_home":"Cosy Nest (Zur Gasse 87)","map_park":"Parcheggio Sportarena","map_walk":"Percorso a piedi","tel":"Tel.","thanks":"Grazie per il vostro soggiorno e buon viaggio di ritorno!","maps":"Foto e percorso"},"es":{"name":"ES","and_":"y","welcomeNamed":["Le damos la bienvenida,","{name}."],"welcomeNamedPlural":["Les damos la bienvenida,","{name}."],"welcomeAnon":["Bienvenidos","a Cosy Nest."],"intro":"Le deseamos una estancia estupenda en Leukerbad. Aquí encontrará todo lo que hay que saber sobre el estudio y la región.","place":"Estudio 14, Haus Adlerhorst, Leukerbad","stay":"Su estancia: del {from} al {to}","network":"Red","password":"Contraseña","copy":"Copiar","copied":"Copiado","titles":{"arrival":"Llegada y salida","tv":"Televisión","trash":"Basura","parking":"Aparcamiento","guestcard":"Guest Card","walks":"Paseos","food":"Restaurantes","transport":"Transporte","emergency":"Emergencias","contact":"Contacto","checkout":"Antes de irse"},"easy":"Fácil","hard":"Difícil","photo":"Foto","map_home":"Cosy Nest (Zur Gasse 87)","map_park":"Aparcamiento Sportarena","map_walk":"Ruta a pie","tel":"Tel.","thanks":"Gracias por su visita. ¡Buen viaje de vuelta!","maps":"Fotos y ruta"}},"img":{"trash":{"src":"local-poubelles.jpg","credit":"© Google Street View","w":600,"h":466},"gorge":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Dalaschlucht_-_Leukerbad%2C_Switzerland3.jpg/960px-Dalaschlucht_-_Leukerbad%2C_Switzerland3.jpg","credit":"dconvertini, CC BY-SA 2.0","url":"https://commons.wikimedia.org/wiki/File:Dalaschlucht_-_Leukerbad,_Switzerland3.jpg","w":960,"h":640},"hamlet":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/3954_Leukerbad%2C_Switzerland_-_panoramio_%282%29.jpg/960px-3954_Leukerbad%2C_Switzerland_-_panoramio_%282%29.jpg","credit":"karico, CC BY-SA 3.0","url":"https://commons.wikimedia.org/wiki/File:3954_Leukerbad,_Switzerland_-_panoramio_(2).jpg","w":960,"h":720},"gemmi":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Gemmi_Daubenwand_14.JPG/960px-Gemmi_Daubenwand_14.JPG","credit":"Photolovy, CC BY-SA 3.0","url":"https://commons.wikimedia.org/wiki/File:Gemmi_Daubenwand_14.JPG","w":960,"h":643}},"todo":{"keys":"Remise des clés : boîte à clés, code, où déposer les clés au départ.","wifi":"Nom du réseau et mot de passe Wi‑Fi (Espace hôte → Réglages).","trash":"Où acheter les sacs taxés, et où déposer le verre et le carton.","guestcard":"Comment la carte est remise aux voyageurs (envoyée par nous, dans le studio…).","transport":"Arrêt de bus le plus proche du studio et temps de marche.","emergency":"Pharmacie, médecin et hôpital les plus proches.","checkout":"Consignes de départ : vaisselle, poubelles, fenêtres, chauffage, clés."},"order":["arrival","tv","trash","parking","guestcard","walks","food","transport","emergency","contact","checkout"],"c":{"arrival":{"fr":[["p","Arrivée dès {checkin}."],["p","Départ au plus tard à {checkout}."],["todo","keys"]],"de":[["p","Ankunft ab {checkin} Uhr."],["p","Abreise spätestens um {checkout} Uhr."],["todo","keys"]],"en":[["p","Check-in from {checkin}."],["p","Check-out by {checkout} at the latest."],["todo","keys"]],"it":[["p","Arrivo dalle {checkin}."],["p","Partenza entro le {checkout}."],["todo","keys"]],"es":[["p","Llegada a partir de las {checkin}."],["p","Salida a más tardar a las {checkout}."],["todo","keys"]]},"tv":{"fr":[["p","La télévision est une Samsung The Frame de 65 pouces. Éteinte, elle affiche une œuvre d’art : c’est le mode Art."],["remote",null],["ol",["Marche/arrêt. Appui court : passer du mode Art à la télévision. Appui long : éteindre complètement.","Home : ouvre le menu des applications (Netflix, Sunrise TV…).","Pavé directionnel : se déplacer. Appuyer au centre pour valider.","Retour : revenir à l’écran précédent.","Volume : pousser vers le haut ou le bas. Appuyer pour couper le son.","Chaînes : chaîne suivante ou précédente.","Netflix : ouvre Netflix directement."]],["h","Regarder les chaînes (Sunrise TV)"],["p","Appuyez sur Home (2). Choisissez l’application Sunrise TV. Ouvrez « TV », puis « Regarder la TV »."],["p","Le guide TV montre les programmes des 7 derniers jours et des 7 prochains jours. Vous pouvez revoir une émission déjà diffusée."],["h","Netflix"],["p","Appuyez sur le bouton Netflix (7). Notre compte est déjà connecté. Merci de ne pas vous déconnecter."],["p","La télécommande ne répond plus ? Rechargez-la avec le câble USB‑C ou posez-la à la lumière, face solaire vers le haut."]],"de":[["p","Der Fernseher ist ein Samsung The Frame mit 65 Zoll. Im ausgeschalteten Zustand zeigt er ein Kunstwerk: das ist der Art-Modus."],["remote",null],["ol",["Ein/Aus. Kurz drücken: vom Art-Modus zum Fernsehen wechseln. Lange drücken: ganz ausschalten.","Home: öffnet das App-Menü (Netflix, Sunrise TV …).","Steuerkreuz: navigieren. In der Mitte drücken zum Bestätigen.","Zurück: zum vorherigen Bildschirm.","Lautstärke: nach oben oder unten drücken. Drücken für Stummschaltung.","Sender: nächster oder vorheriger Sender.","Netflix: öffnet Netflix direkt."]],["h","Fernsehsender (Sunrise TV)"],["p","Drücken Sie Home (2). Wählen Sie die App Sunrise TV. Öffnen Sie «TV» und dann «TV schauen»."],["p","Der TV-Guide zeigt die Sendungen der letzten 7 und der nächsten 7 Tage. Bereits gezeigte Sendungen können Sie nachschauen."],["h","Netflix"],["p","Drücken Sie die Netflix-Taste (7). Unser Konto ist bereits angemeldet. Bitte melden Sie sich nicht ab."],["p","Die Fernbedienung reagiert nicht? Laden Sie sie mit dem USB‑C-Kabel oder legen Sie sie mit der Solarseite nach oben ans Licht."]],"en":[["p","The TV is a 65-inch Samsung The Frame. When it is off, it shows a work of art: this is Art Mode."],["remote",null],["ol",["Power. Short press: switch from Art Mode to TV. Long press: switch off completely.","Home: opens the apps menu (Netflix, Sunrise TV…).","Direction pad: move around. Press the centre to select.","Back: return to the previous screen.","Volume: push up or down. Press to mute.","Channels: next or previous channel.","Netflix: opens Netflix directly."]],["h","Watching TV channels (Sunrise TV)"],["p","Press Home (2). Choose the Sunrise TV app. Open “TV”, then “Watch TV”."],["p","The TV guide shows programmes from the last 7 days and the next 7 days. You can replay shows that have already aired."],["h","Netflix"],["p","Press the Netflix button (7). Our account is already signed in. Please do not sign out."],["p","Remote not responding? Charge it with the USB‑C cable or place it in the light, solar side up."]],"it":[["p","La televisione è una Samsung The Frame da 65 pollici. Da spenta mostra un’opera d’arte: è la modalità Art."],["remote",null],["ol",["Accensione. Pressione breve: passare dalla modalità Art alla TV. Pressione lunga: spegnere del tutto.","Home: apre il menu delle app (Netflix, Sunrise TV…).","Tasti direzionali: spostarsi. Premere al centro per confermare.","Indietro: tornare alla schermata precedente.","Volume: spingere in su o in giù. Premere per togliere l’audio.","Canali: canale successivo o precedente.","Netflix: apre direttamente Netflix."]],["h","Guardare i canali (Sunrise TV)"],["p","Premete Home (2). Scegliete l’app Sunrise TV. Aprite «TV», poi «Guarda la TV»."],["p","La guida TV mostra i programmi degli ultimi 7 giorni e dei prossimi 7. Potete rivedere le trasmissioni già andate in onda."],["h","Netflix"],["p","Premete il tasto Netflix (7). Il nostro account è già collegato. Vi preghiamo di non disconnettervi."],["p","Il telecomando non risponde? Ricaricatelo con il cavo USB‑C o mettetelo alla luce, con il lato solare verso l’alto."]],"es":[["p","La televisión es una Samsung The Frame de 65 pulgadas. Apagada, muestra una obra de arte: es el modo Arte."],["remote",null],["ol",["Encendido. Pulsación corta: pasar del modo Arte a la televisión. Pulsación larga: apagar del todo.","Home: abre el menú de aplicaciones (Netflix, Sunrise TV…).","Cruceta: moverse. Pulse el centro para confirmar.","Atrás: volver a la pantalla anterior.","Volumen: empujar hacia arriba o abajo. Pulsar para silenciar.","Canales: canal siguiente o anterior.","Netflix: abre Netflix directamente."]],["h","Ver los canales (Sunrise TV)"],["p","Pulse Home (2). Elija la aplicación Sunrise TV. Abra «TV» y luego «Ver la TV»."],["p","La guía muestra los programas de los últimos 7 días y de los próximos 7. Puede volver a ver programas ya emitidos."],["h","Netflix"],["p","Pulse el botón Netflix (7). Nuestra cuenta ya está conectada. Por favor, no cierre la sesión."],["p","¿El mando no responde? Cárguelo con el cable USB‑C o déjelo a la luz, con la cara solar hacia arriba."]]},"trash":{"fr":[["p","Sortez de l’immeuble et traversez la place. Le local à ordures est en face : une porte en bois arrondie, sous le panneau « Kunibergstrasse »."],["img","trash"],["p","Seuls les sacs taxés officiels sont acceptés. Le verre et le carton ne vont pas dans ce local."],["todo","trash"]],"de":[["p","Verlassen Sie das Haus und überqueren Sie den Platz. Der Abfallraum ist gegenüber: eine runde Holztür unter dem Schild «Kunibergstrasse»."],["img","trash"],["p","Nur offizielle Gebührensäcke sind erlaubt. Glas und Karton gehören nicht in diesen Raum."],["todo","trash"]],"en":[["p","Leave the building and cross the square. The rubbish room is opposite: a rounded wooden door under the “Kunibergstrasse” sign."],["img","trash"],["p","Only official taxed bags are accepted. Glass and cardboard do not go in this room."],["todo","trash"]],"it":[["p","Uscite dall’edificio e attraversate la piazza. Il locale rifiuti è di fronte: una porta di legno ad arco, sotto il cartello «Kunibergstrasse»."],["img","trash"],["p","Sono accettati solo i sacchi ufficiali a pagamento. Vetro e cartone non vanno in questo locale."],["todo","trash"]],"es":[["p","Salga del edificio y cruce la plaza. El cuarto de basuras está enfrente: una puerta de madera en arco, bajo el cartel «Kunibergstrasse»."],["img","trash"],["p","Solo se aceptan las bolsas oficiales de pago. El vidrio y el cartón no van en este cuarto."],["todo","trash"]]},"parking":{"fr":[["p","Devant l’immeuble, une place permet de charger et décharger vos affaires. Durée maximale : 45 minutes."],["p","Pour stationner plus longtemps : parking de la Sportarena (Römerweg 5). Tarif : CHF 14.– par jour. Il est à environ 330 m, soit 5 minutes à pied."],["map",null]],"de":[["p","Vor dem Haus gibt es einen Platz zum Ein- und Ausladen. Höchstdauer: 45 Minuten."],["p","Für längeres Parkieren: Parkhaus Sportarena (Römerweg 5). Preis: CHF 14.– pro Tag. Es liegt rund 330 m entfernt, etwa 5 Minuten zu Fuss."],["map",null]],"en":[["p","In front of the building there is a space for loading and unloading. Maximum stay: 45 minutes."],["p","For longer parking: Sportarena car park (Römerweg 5). Price: CHF 14 per day. It is about 330 m away, a 5-minute walk."],["map",null]],"it":[["p","Davanti all’edificio c’è un posto per caricare e scaricare i bagagli. Durata massima: 45 minuti."],["p","Per sostare più a lungo: parcheggio della Sportarena (Römerweg 5). Tariffa: CHF 14.– al giorno. Si trova a circa 330 m, 5 minuti a piedi."],["map",null]],"es":[["p","Delante del edificio hay una plaza para cargar y descargar. Tiempo máximo: 45 minutos."],["p","Para aparcar más tiempo: aparcamiento de la Sportarena (Römerweg 5). Precio: CHF 14 al día. Está a unos 330 m, 5 minutos a pie."],["map",null]]},"guestcard":{"fr":[["p","La Leukerbad Guest Card est incluse dans la taxe de séjour. Elle vous donne ces avantages :"],["ul",["15 % de réduction sur l’entrée aux trois centres thermaux : Leukerbad Therme, Walliser Alpentherme & SPA et Therme 51°.","10 % de réduction sur les remontées mécaniques.","Transports gratuits avec le bus local Ringjet et les lignes Leukerbad–Flaschen–Albinen et Leukerbad–Inden, y compris Rumeling et Tschingeren.","Accès gratuit au Snowpark Sportarena.","Accès gratuit aux installations sportives de la Sportarena Leukerbad (tennis, badminton, patinoire). 50 % de réduction sur le padel. La location de matériel reste payante.","Accès gratuit au court de tennis en terre battue de l’hôtel Regina Terme, de juin à octobre.","Participation gratuite à une sélection de concerts, animations et excursions de la Leukerbad Guest Card."]],["todo","guestcard"]],"de":[["p","Die Leukerbad Guest Card ist in der Kurtaxe inbegriffen. Sie bietet Ihnen diese Vorteile:"],["ul",["15 % Rabatt auf den Eintritt in die drei Thermalbäder: Leukerbad Therme, Walliser Alpentherme & SPA und Therme 51°.","10 % Rabatt auf die Bergbahnen.","Gratis Busfahrten mit dem Ortsbus Ringjet und den Linien Leukerbad–Flaschen–Albinen und Leukerbad–Inden, inklusive Rumeling und Tschingeren.","Gratis Zugang zum Snowpark Sportarena.","Gratis Zugang zu den Sportanlagen der Sportarena Leukerbad (Tennis, Badminton, Eisbahn). 50 % Rabatt auf Padel. Die Materialmiete ist kostenpflichtig.","Gratis Zugang zum Sandplatz-Tennis des Hotels Regina Terme, von Juni bis Oktober.","Gratis Teilnahme an ausgewählten Konzerten, Animationen und Ausflügen der Leukerbad Guest Card."]],["todo","guestcard"]],"en":[["p","The Leukerbad Guest Card is included in the tourist tax. It gives you these benefits:"],["ul",["15% off admission to the three thermal baths: Leukerbad Therme, Walliser Alpentherme & SPA and Therme 51°.","10% off the cable cars and ski lifts.","Free travel on the local Ringjet bus and on the Leukerbad–Flaschen–Albinen and Leukerbad–Inden lines, including Rumeling and Tschingeren.","Free access to the Snowpark Sportarena.","Free access to the Sportarena Leukerbad facilities (tennis, badminton, ice rink). 50% off padel. Equipment hire is not included.","Free access to the clay tennis court of Hotel Regina Terme, from June to October.","Free entry to a selection of concerts, events and excursions of the Leukerbad Guest Card."]],["todo","guestcard"]],"it":[["p","La Leukerbad Guest Card è inclusa nella tassa di soggiorno. Vi offre questi vantaggi:"],["ul",["15 % di sconto sull’ingresso ai tre centri termali: Leukerbad Therme, Walliser Alpentherme & SPA e Therme 51°.","10 % di sconto sugli impianti di risalita.","Trasporti gratuiti con il bus locale Ringjet e con le linee Leukerbad–Flaschen–Albinen e Leukerbad–Inden, compresi Rumeling e Tschingeren.","Accesso gratuito allo Snowpark Sportarena.","Accesso gratuito agli impianti sportivi della Sportarena Leukerbad (tennis, badminton, pista di pattinaggio). 50 % di sconto sul padel. Il noleggio dell’attrezzatura è a pagamento.","Accesso gratuito al campo da tennis in terra battuta dell’hotel Regina Terme, da giugno a ottobre.","Partecipazione gratuita a una selezione di concerti, animazioni ed escursioni della Leukerbad Guest Card."]],["todo","guestcard"]],"es":[["p","La Leukerbad Guest Card está incluida en la tasa turística. Le ofrece estas ventajas:"],["ul",["15 % de descuento en la entrada a los tres centros termales: Leukerbad Therme, Walliser Alpentherme & SPA y Therme 51°.","10 % de descuento en los remontes.","Transporte gratuito en el autobús local Ringjet y en las líneas Leukerbad–Flaschen–Albinen y Leukerbad–Inden, incluidos Rumeling y Tschingeren.","Acceso gratuito al Snowpark Sportarena.","Acceso gratuito a las instalaciones de la Sportarena Leukerbad (tenis, bádminton, pista de hielo). 50 % de descuento en pádel. El alquiler de material se paga aparte.","Acceso gratuito a la pista de tenis de tierra batida del hotel Regina Terme, de junio a octubre.","Participación gratuita en una selección de conciertos, animaciones y excursiones de la Leukerbad Guest Card."]],["todo","guestcard"]]},"walks":{"fr":[["p","Trois balades, de la plus tranquille à la plus sportive."],["walk",{"level":"easy","img":"gorge","name":"Sentier des sources thermales","facts":"2,8 km · environ 1 h","text":["Départ de la place du village. Une passerelle en acier entre dans la gorge de la Dala, à quelques mètres au-dessus du torrent. Elle mène aux sources chaudes.","Deux escaliers métalliques permettent de sortir de la gorge. Un don libre est demandé (espèces ou Twint)."]}],["walk",{"level":"easy","img":"hamlet","name":"Balade au Bodmenstübli","facts":"2 km · 45 min à 1 h","text":["Facile et très agréable : c’est notre balade préférée. Le chemin part derrière la Sportarena et suit l’ancien Römerweg.","Après le hameau de Birchen (30 min), il arrive à Bodmen. Le restaurant Bodmenstübli vous y attend avec sa terrasse. Retour par le même chemin."]}],["walk",{"level":"hard","img":"gemmi","name":"Montée de la Gemmi à pied","facts":"4,6 km · 970 m de montée · 2 h à 2 h 30","text":["Pour les sportifs, sans téléphérique. Le chemin part près de la station de la Gemmibahn. Taillé dans la falaise au XVIIIe siècle, il monte en lacets jusqu’au col, à 2350 m.","Le chemin est sécurisé mais exposé : bonnes chaussures et pas de vertige. En haut, faites le tour du lac Daubensee. Redescendez en téléphérique (10 % de réduction avec la Guest Card)."]}]],"de":[["p","Drei Wanderungen, von gemütlich bis sportlich."],["walk",{"level":"easy","img":"gorge","name":"Thermalquellen-Steg","facts":"2,8 km · etwa 1 Std.","text":["Start auf dem Dorfplatz. Ein Stahlsteg führt in die Dalaschlucht, einige Meter über dem Bach. Er bringt Sie zu den heissen Quellen.","Zwei Eisentreppen führen aus der Schlucht hinaus. Eine freiwillige Spende ist willkommen (bar oder Twint)."]}],["walk",{"level":"easy","img":"hamlet","name":"Spaziergang zum Bodmenstübli","facts":"2 km · 45 Min. bis 1 Std.","text":["Leicht und sehr schön: unsere Lieblingswanderung. Der Weg beginnt hinter der Sportarena und folgt dem alten Römerweg.","Nach dem Weiler Birchen (30 Min.) erreichen Sie Bodmen. Dort wartet das Restaurant Bodmenstübli mit seiner Terrasse. Zurück auf dem gleichen Weg."]}],["walk",{"level":"hard","img":"gemmi","name":"Zu Fuss auf die Gemmi","facts":"4,6 km · 970 Höhenmeter · 2 bis 2½ Std.","text":["Für Sportliche, ohne Seilbahn. Der Weg beginnt bei der Talstation der Gemmibahn. Er wurde im 18. Jahrhundert in den Fels geschlagen und führt in Kehren bis zum Pass auf 2350 m.","Der Weg ist gesichert, aber ausgesetzt: gute Schuhe und Schwindelfreiheit. Oben lohnt sich die Runde um den Daubensee. Zurück mit der Seilbahn (10 % Rabatt mit der Guest Card)."]}]],"en":[["p","Three walks, from relaxed to sporty."],["walk",{"level":"easy","img":"gorge","name":"Thermal springs footbridge","facts":"2.8 km · about 1 hr","text":["Start from the village square. A steel footbridge enters the Dala gorge, a few metres above the stream. It leads to the hot springs.","Two metal staircases take you out of the gorge. A voluntary donation is welcome (cash or Twint)."]}],["walk",{"level":"easy","img":"hamlet","name":"Walk to the Bodmenstübli","facts":"2 km · 45 min to 1 hr","text":["Easy and lovely: our favourite walk. The path starts behind the Sportarena and follows the old Römerweg.","After the hamlet of Birchen (30 min), it reaches Bodmen. The Bodmenstübli restaurant awaits you there with its terrace. Return the same way."]}],["walk",{"level":"hard","img":"gemmi","name":"Hiking up the Gemmi","facts":"4.6 km · 970 m climb · 2 to 2½ hrs","text":["For the sporty, without the cable car. The path starts near the Gemmibahn valley station. Cut into the cliff in the 18th century, it zigzags up to the pass at 2,350 m.","The path is secured but exposed: wear good shoes and only go if you have a head for heights. At the top, walk around Lake Daubensee. Come down by cable car (10% off with the Guest Card)."]}]],"it":[["p","Tre passeggiate, dalla più tranquilla alla più sportiva."],["walk",{"level":"easy","img":"gorge","name":"Passerella delle sorgenti termali","facts":"2,8 km · circa 1 ora","text":["Partenza dalla piazza del paese. Una passerella d’acciaio entra nella gola della Dala, a pochi metri sopra il torrente. Porta alle sorgenti calde.","Due scale metalliche permettono di uscire dalla gola. È gradita un’offerta libera (contanti o Twint)."]}],["walk",{"level":"easy","img":"hamlet","name":"Passeggiata al Bodmenstübli","facts":"2 km · da 45 min a 1 ora","text":["Facile e molto piacevole: è la nostra passeggiata preferita. Il sentiero parte dietro la Sportarena e segue l’antico Römerweg.","Dopo la frazione di Birchen (30 min) arriva a Bodmen. Lì vi aspetta il ristorante Bodmenstübli con la sua terrazza. Ritorno per la stessa strada."]}],["walk",{"level":"hard","img":"gemmi","name":"Salita alla Gemmi a piedi","facts":"4,6 km · 970 m di dislivello · da 2 a 2 ore e mezza","text":["Per gli sportivi, senza funivia. Il sentiero parte vicino alla stazione a valle della Gemmibahn. Scavato nella roccia nel XVIII secolo, sale a tornanti fino al passo, a 2350 m.","Il sentiero è attrezzato ma esposto: scarpe adatte e niente vertigini. In cima, fate il giro del lago Daubensee. Scendete in funivia (10 % di sconto con la Guest Card)."]}]],"es":[["p","Tres paseos, del más tranquilo al más deportivo."],["walk",{"level":"easy","img":"gorge","name":"Pasarela de las fuentes termales","facts":"2,8 km · alrededor de 1 h","text":["Salida desde la plaza del pueblo. Una pasarela de acero entra en la garganta del Dala, a pocos metros sobre el torrente. Lleva hasta las fuentes calientes.","Dos escaleras metálicas permiten salir de la garganta. Se agradece un donativo libre (efectivo o Twint)."]}],["walk",{"level":"easy","img":"hamlet","name":"Paseo al Bodmenstübli","facts":"2 km · de 45 min a 1 h","text":["Fácil y muy agradable: es nuestro paseo favorito. El camino sale detrás de la Sportarena y sigue el antiguo Römerweg.","Tras la aldea de Birchen (30 min), llega a Bodmen. Allí le espera el restaurante Bodmenstübli con su terraza. Vuelta por el mismo camino."]}],["walk",{"level":"hard","img":"gemmi","name":"Subida a la Gemmi a pie","facts":"4,6 km · 970 m de desnivel · de 2 a 2 h 30","text":["Para deportistas, sin teleférico. El camino sale cerca de la estación del Gemmibahn. Excavado en el acantilado en el siglo XVIII, sube en zigzag hasta el puerto, a 2350 m.","El camino está asegurado pero expuesto: buen calzado y sin vértigo. Arriba, dé la vuelta al lago Daubensee. Baje en teleférico (10 % de descuento con la Guest Card)."]}]]},"food":{"fr":[["p","Nos adresses préférées."],["resto",{"id":"bodmenstuebli","name":"1. Bodmenstübli","text":"Dans le hameau de Bodmen, à 45 minutes à pied du village. Les voitures n’y montent pas. Restaurant chaleureux avec une grande terrasse et une vue dégagée sur les montagnes. Parfait au bout de la balade du Römerweg."}],["resto",{"id":"weidstuebli","tel":"+41 27 470 35 58","name":"2. Weidstübli","text":"Restaurant de montagne au-dessus du village, à 1500 m. Chalet en mélèze, terrasse au soleil face aux parois rocheuses et place de jeux pour les enfants. Classiques de cabane et plats plus originaux. Ouvert en journée, en saison. Fermé le mercredi."}],["resto",{"id":"lounge1411","tel":"+41 27 470 14 11","name":"3. 1411 Restaurant Lounge","text":"Au cœur du village. Décor soigné et ambiance lounge. Cuisine d’inspiration française et italienne."}],["resto",{"id":"altels","name":"Sans marcher : Altels","text":"Juste à côté du studio. Ambiance simple et authentique. Notre conseil : choisissez la cuisine italienne plutôt que la fondue."}]],"de":[["p","Unsere Lieblingsadressen."],["resto",{"id":"bodmenstuebli","name":"1. Bodmenstübli","text":"Im Weiler Bodmen, 45 Minuten zu Fuss vom Dorf. Autos fahren nicht hinauf. Gemütliches Restaurant mit grosser Terrasse und freiem Blick auf die Berge. Ideal am Ende der Römerweg-Wanderung."}],["resto",{"id":"weidstuebli","tel":"+41 27 470 35 58","name":"2. Weidstübli","text":"Bergrestaurant oberhalb des Dorfs, auf 1500 m. Lärchenholz-Chalet, Sonnenterrasse mit Blick auf die Felswände und Spielplatz für Kinder. Hüttenklassiker und originelle Gerichte. Tagsüber in der Saison geöffnet. Mittwoch geschlossen."}],["resto",{"id":"lounge1411","tel":"+41 27 470 14 11","name":"3. 1411 Restaurant Lounge","text":"Im Herzen des Dorfs. Gepflegtes Dekor und Lounge-Stimmung. Französisch und italienisch inspirierte Küche."}],["resto",{"id":"altels","name":"Ohne Spaziergang: Altels","text":"Gleich neben dem Studio. Einfache, authentische Stimmung. Unser Tipp: Wählen Sie die italienische Küche statt Fondue."}]],"en":[["p","Our favourite places."],["resto",{"id":"bodmenstuebli","name":"1. Bodmenstübli","text":"In the hamlet of Bodmen, a 45-minute walk from the village. Cars do not go up there. A warm restaurant with a large terrace and open views of the mountains. Perfect at the end of the Römerweg walk."}],["resto",{"id":"weidstuebli","tel":"+41 27 470 35 58","name":"2. Weidstübli","text":"Mountain restaurant above the village, at 1,500 m. Larch-wood chalet, sunny terrace facing the rock walls and a playground for children. Hut classics and more creative dishes. Open during the day, in season. Closed on Wednesdays."}],["resto",{"id":"lounge1411","tel":"+41 27 470 14 11","name":"3. 1411 Restaurant Lounge","text":"In the heart of the village. Stylish decor and a lounge atmosphere. French- and Italian-inspired cooking."}],["resto",{"id":"altels","name":"No walking needed: Altels","text":"Right next to the studio. Simple, authentic atmosphere. Our tip: choose the Italian dishes rather than the fondue."}]],"it":[["p","I nostri indirizzi preferiti."],["resto",{"id":"bodmenstuebli","name":"1. Bodmenstübli","text":"Nella frazione di Bodmen, a 45 minuti a piedi dal paese. Le auto non salgono. Ristorante accogliente con una grande terrazza e vista aperta sulle montagne. Perfetto alla fine della passeggiata sul Römerweg."}],["resto",{"id":"weidstuebli","tel":"+41 27 470 35 58","name":"2. Weidstübli","text":"Ristorante di montagna sopra il paese, a 1500 m. Chalet in larice, terrazza al sole di fronte alle pareti rocciose e parco giochi per i bambini. Classici di baita e piatti più originali. Aperto di giorno, in stagione. Chiuso il mercoledì."}],["resto",{"id":"lounge1411","tel":"+41 27 470 14 11","name":"3. 1411 Restaurant Lounge","text":"Nel cuore del paese. Arredamento curato e atmosfera lounge. Cucina di ispirazione francese e italiana."}],["resto",{"id":"altels","name":"Senza camminare: Altels","text":"Proprio accanto allo studio. Atmosfera semplice e autentica. Il nostro consiglio: scegliete la cucina italiana piuttosto che la fonduta."}]],"es":[["p","Nuestras direcciones favoritas."],["resto",{"id":"bodmenstuebli","name":"1. Bodmenstübli","text":"En la aldea de Bodmen, a 45 minutos a pie del pueblo. Los coches no suben. Restaurante acogedor con una gran terraza y vistas abiertas a las montañas. Perfecto al final del paseo por el Römerweg."}],["resto",{"id":"weidstuebli","tel":"+41 27 470 35 58","name":"2. Weidstübli","text":"Restaurante de montaña sobre el pueblo, a 1500 m. Chalé de alerce, terraza al sol frente a las paredes de roca y parque infantil. Clásicos de refugio y platos más originales. Abierto de día, en temporada. Cerrado los miércoles."}],["resto",{"id":"lounge1411","tel":"+41 27 470 14 11","name":"3. 1411 Restaurant Lounge","text":"En el corazón del pueblo. Decoración cuidada y ambiente lounge. Cocina de inspiración francesa e italiana."}],["resto",{"id":"altels","name":"Sin caminar: Altels","text":"Justo al lado del estudio. Ambiente sencillo y auténtico. Nuestro consejo: elija la cocina italiana en lugar de la fondue."}]]},"transport":{"fr":[["p","Le bus local Ringjet est gratuit avec la Guest Card."],["p","Le bus LLB relie Loèche-les-Bains à la gare de Loèche (Leuk) en une trentaine de minutes. De là, trains CFF vers Sion, Brigue et Berne."],["todo","transport"]],"de":[["p","Der Ortsbus Ringjet ist mit der Guest Card gratis."],["p","Der LLB-Bus verbindet Leukerbad in rund 30 Minuten mit dem Bahnhof Leuk. Von dort fahren SBB-Züge nach Sitten, Brig und Bern."],["todo","transport"]],"en":[["p","The local Ringjet bus is free with the Guest Card."],["p","The LLB bus links Leukerbad with Leuk railway station in about 30 minutes. From there, SBB trains run to Sion, Brig and Bern."],["todo","transport"]],"it":[["p","Il bus locale Ringjet è gratuito con la Guest Card."],["p","L’autobus LLB collega Leukerbad alla stazione di Leuk in circa 30 minuti. Da lì partono i treni FFS per Sion, Briga e Berna."],["todo","transport"]],"es":[["p","El autobús local Ringjet es gratuito con la Guest Card."],["p","El autobús LLB une Leukerbad con la estación de Leuk en unos 30 minutos. Desde allí salen trenes SBB a Sion, Brig y Berna."],["todo","transport"]]},"emergency":{"fr":[["tel",[["Ambulance","144"],["Police","117"],["Pompiers","118"],["Rega, sauvetage aérien","1414"],["Numéro d’urgence européen","112"]]],["todo","emergency"]],"de":[["tel",[["Sanität","144"],["Polizei","117"],["Feuerwehr","118"],["Rega, Luftrettung","1414"],["Europäische Notrufnummer","112"]]],["todo","emergency"]],"en":[["tel",[["Ambulance","144"],["Police","117"],["Fire brigade","118"],["Rega air rescue","1414"],["European emergency number","112"]]],["todo","emergency"]],"it":[["tel",[["Ambulanza","144"],["Polizia","117"],["Pompieri","118"],["Rega, soccorso aereo","1414"],["Numero d’emergenza europeo","112"]]],["todo","emergency"]],"es":[["tel",[["Ambulancia","144"],["Policía","117"],["Bomberos","118"],["Rega, rescate aéreo","1414"],["Número de emergencia europeo","112"]]],["todo","emergency"]]},"contact":{"fr":[["contact",["Une question ? Écrivez-nous dans l’application Airbnb ou Booking, ou appelez le {phone}.","Une question ? Écrivez-nous dans l’application Airbnb ou Booking."]]],"de":[["contact",["Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App oder rufen Sie an: {phone}.","Fragen? Schreiben Sie uns in der Airbnb- oder Booking-App."]]],"en":[["contact",["Any questions? Message us in the Airbnb or Booking app, or call {phone}.","Any questions? Message us in the Airbnb or Booking app."]]],"it":[["contact",["Domande? Scriveteci nell’app Airbnb o Booking, oppure chiamate il {phone}.","Domande? Scriveteci nell’app Airbnb o Booking."]]],"es":[["contact",["¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking, o llame al {phone}.","¿Alguna pregunta? Escríbanos en la app de Airbnb o Booking."]]]},"checkout":{"fr":[["p","Départ au plus tard à {checkout}."],["todo","checkout"],["thanks",null]],"de":[["p","Abreise spätestens um {checkout} Uhr."],["todo","checkout"],["thanks",null]],"en":[["p","Check-out by {checkout} at the latest."],["todo","checkout"],["thanks",null]],"it":[["p","Partenza entro le {checkout}."],["todo","checkout"],["thanks",null]],"es":[["p","Salida a más tardar a las {checkout}."],["todo","checkout"],["thanks",null]]}},"map":{"home":[46.3814627,7.6262877],"park":[46.3805276,7.6243429],"route":[[46.381389,7.626385],[46.381392,7.62639],[46.381424,7.626476],[46.38145,7.626579],[46.381586,7.626463],[46.381745,7.626332],[46.38182,7.626284],[46.381867,7.626254],[46.381855,7.6262],[46.381811,7.62604],[46.381621,7.625812],[46.381246,7.625055],[46.381295,7.624958],[46.3813,7.624883],[46.381279,7.624815],[46.381248,7.624719],[46.381212,7.624691],[46.38117,7.624692],[46.381189,7.62464],[46.381192,7.624603],[46.381211,7.624578],[46.381177,7.624472],[46.380942,7.624598],[46.380854,7.624275],[46.380894,7.624252],[46.380853,7.624118],[46.380755,7.624167],[46.380766,7.624208]]},"mapsQ":{"bodmenstuebli":"Bodmenstübli Leukerbad","weidstuebli":"Restaurant Weidstübli Leukerbad","lounge1411":"1411 Restaurant Lounge Leukerbad","altels":"Restaurant Altels Leukerbad"},"restoImg":[]};
+  var T = D.ui, LANGS = ['fr','de','en','it','es'];
   var LOCALE = {fr:'fr-CH', de:'de-CH', en:'en-GB', it:'it-CH', es:'es-ES'};
+  var REMOTE = "<svg class=\"remote\" viewBox=\"0 0 150 340\" role=\"img\" aria-label=\"Samsung remote\">\n<rect class=\"rb\" x=\"37\" y=\"8\" width=\"76\" height=\"324\" rx=\"38\"/>\n<circle class=\"bt\" cx=\"75\" cy=\"40\" r=\"9\"/><path class=\"ic\" d=\"M75 34v6M70.5 36.5a6 6 0 1 0 9 0\"/>\n<circle class=\"bt\" cx=\"75\" cy=\"112\" r=\"28\"/><circle class=\"bt2\" cx=\"75\" cy=\"112\" r=\"11\"/>\n<path class=\"ic\" d=\"M75 89l-3 4h6zM75 135l-3-4h6zM52 112l4-3v6zM98 112l-4-3v6z\"/>\n<circle class=\"bt\" cx=\"56\" cy=\"165\" r=\"9\"/><path class=\"ic\" d=\"M59.5 162.5h-5.5a3.5 3.5 0 0 0 0 7h4M54 160l-3 2.5 3 2.5\"/>\n<circle class=\"bt\" cx=\"94\" cy=\"165\" r=\"9\"/><path class=\"ic\" d=\"M89.5 167.5l4.5-4.5 4.5 4.5M91 166v4h6v-4\"/>\n<rect class=\"bt\" x=\"49\" y=\"190\" width=\"16\" height=\"54\" rx=\"8\"/><path class=\"ic\" d=\"M57 197v6M54 200h6M54 235h6\"/>\n<rect class=\"bt\" x=\"85\" y=\"190\" width=\"16\" height=\"54\" rx=\"8\"/><path class=\"ic\" d=\"M93 196l-3 4h6zM93 238l-3-4h6z\"/>\n<rect class=\"bt nf\" x=\"52\" y=\"268\" width=\"46\" height=\"15\" rx=\"7.5\"/><text class=\"nft\" x=\"75\" y=\"278.6\" text-anchor=\"middle\">NETFLIX</text>\n<rect class=\"bt\" x=\"52\" y=\"290\" width=\"46\" height=\"15\" rx=\"7.5\" opacity=\".45\"/>\n<g class=\"callout\">\n<line x1=\"22\" y1=\"40\" x2=\"65\" y2=\"40\"/><circle cx=\"16\" cy=\"40\" r=\"9\"/><text x=\"16\" y=\"43.5\">1</text>\n<line x1=\"128\" y1=\"165\" x2=\"104\" y2=\"165\"/><circle cx=\"134\" cy=\"165\" r=\"9\"/><text x=\"134\" y=\"168.5\">2</text>\n<line x1=\"128\" y1=\"112\" x2=\"104\" y2=\"112\"/><circle cx=\"134\" cy=\"112\" r=\"9\"/><text x=\"134\" y=\"115.5\">3</text>\n<line x1=\"22\" y1=\"165\" x2=\"46\" y2=\"165\"/><circle cx=\"16\" cy=\"165\" r=\"9\"/><text x=\"16\" y=\"168.5\">4</text>\n<line x1=\"22\" y1=\"217\" x2=\"48\" y2=\"217\"/><circle cx=\"16\" cy=\"217\" r=\"9\"/><text x=\"16\" y=\"220.5\">5</text>\n<line x1=\"128\" y1=\"217\" x2=\"102\" y2=\"217\"/><circle cx=\"134\" cy=\"217\" r=\"9\"/><text x=\"134\" y=\"220.5\">6</text>\n<line x1=\"128\" y1=\"275.5\" x2=\"99\" y2=\"275.5\"/><circle cx=\"134\" cy=\"275.5\" r=\"9\"/><text x=\"134\" y=\"279\">7</text>\n</g></svg>";
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function fill(tpl, vars){ return tpl.replace(/\{(\w+)\}/g, function(m,k){ return vars[k] != null ? vars[k] : m; }); }
+  function fill(tpl, vars){ return String(tpl).replace(/\{(\w+)\}/g, function(m,k){ return vars[k] != null ? vars[k] : m; }); }
   function todayISO(){
     try { return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
     catch(e){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -172,7 +37,7 @@
   }
   function namesOf(s){ var n = Array.isArray(s.names) ? s.names : String(s.name || '').split(/\s*[,;]\s*/); return n.map(function(x){ return String(x).trim(); }).filter(Boolean); }
   function joinNames(names, lang){
-    var conj = (T[lang] && T[lang].and) || 'et';
+    var conj = (T[lang] && T[lang].and_) || 'et';
     if (names.length <= 1) return names[0] || '';
     if (lang === 'es' && /^(hi|i)/i.test(names[names.length-1]) && !/^hie/i.test(names[names.length-1])) conj = 'e';
     return names.slice(0,-1).join(', ') + ' ' + conj + ' ' + names[names.length-1];
@@ -199,21 +64,18 @@
     var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 15000);
     var opts = {method:method, redirect:'follow', cache:'no-store'};
     if (ctrl) opts.signal = ctrl.signal;
-    if (method === 'POST'){ opts.body = JSON.stringify(body || {}); opts.headers = {'Content-Type':'text/plain;charset=utf-8'}; }
-    var u = method === 'GET' ? url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now() : url;
+    var u = url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
     return fetch(u, opts).then(function(r){ return r.text(); }).then(function(txt){
       clearTimeout(timer);
       try { return JSON.parse(txt); } catch(e){ throw {code:'bad_response'}; }
-    }, function(e){ clearTimeout(timer); throw {code: (e && e.name === 'AbortError') ? 'timeout' : 'network'}; });
+    }, function(e){ clearTimeout(timer); throw {code:'network'}; });
   }
 
   var state = {stays:[], settings:{}};
   var loading = true;
   try { var cached = JSON.parse(localStorage.getItem('cn-state') || 'null'); if (cached && cached.stays) { state = cached; loading = false; } } catch(e){}
-
   var qs = {};
   try { location.search.slice(1).split('&').forEach(function(kv){ if(!kv) return; var p = kv.split('='); qs[decodeURIComponent(p[0])] = decodeURIComponent((p[1]||'').replace(/\+/g,' ')); }); } catch(e){}
-
   function browserLang(){
     var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
     for (var i = 0; i < list.length; i++){ var l = String(list[i]).slice(0,2).toLowerCase(); if (LANGS.indexOf(l) >= 0) return l; }
@@ -223,36 +85,41 @@
   try { manualLang = sessionStorage.getItem('cn-lang'); } catch(e){}
   if (LANGS.indexOf(qs.lang) >= 0) manualLang = qs.lang;
 
-  function todo(txt){ return '<div class="todo"><b>À compléter</b>' + esc(txt) + '</div>'; }
-  function p(txt){ return '<p>' + esc(txt) + '</p>'; }
-
-  function sectionBody(id, t, S){
-    var h = '';
-    if (id === 'arrival'){
-      if (S.checkin && S.checkout) h += p(fill(t.checkin,{checkin:S.checkin}) + ' ' + fill(t.checkout,{checkout:S.checkout})); else h += todo(TODO.times);
-      h += todo(TODO.keys);
-    } else if (id === 'tv'){ h += todo(TODO.tv);
-    } else if (id === 'trash'){ h += p(t.trash) + todo(TODO.trash);
-    } else if (id === 'parking'){ if (S.parkingSpot) h += p(fill(t.spot,{spot:S.parkingSpot})); h += todo(TODO.parking);
-    } else if (id === 'guestcard'){ h += p(t.guestcard) + todo(TODO.guestcard);
-    } else if (id === 'walks'){ h += t.walks.map(p).join('') + todo(TODO.walks);
-    } else if (id === 'food'){ h += todo(TODO.food);
-    } else if (id === 'transport'){ h += p(t.transport) + todo(TODO.transport);
-    } else if (id === 'emergency'){
-      h += '<ul>' + t.emergency.map(function(e){ return '<li>' + esc(e[0]) + ' <a href="tel:' + esc(e[1]) + '">' + esc(e[1]) + '</a></li>'; }).join('') + '</ul>' + todo(TODO.emergency);
-    } else if (id === 'contact'){
-      if (S.hostPhone){
-        var tel = String(S.hostPhone).replace(/[^+\d]/g,'');
-        h += '<p>' + esc(fill(t.contactPhone,{phone:'\u0000'})).replace('\u0000', '<a href="tel:' + esc(tel) + '">' + esc(S.hostPhone) + '</a>') + '</p>';
-      } else h += p(t.contact);
-    } else if (id === 'checkout'){
-      if (S.checkout) h += p(fill(t.checkout,{checkout:S.checkout}));
-      h += todo(TODO.checkout) + p(t.thanks);
-    }
-    return h;
+  function todo(key){ return '<div class="todo"><b>À compléter</b>' + esc(D.todo[key] || key) + '</div>'; }
+  function figure(key, lang){
+    var im = D.img[key]; if (!im) return '';
+    var cr = im.url ? '<a href="' + esc(im.url) + '" target="_blank" rel="noopener">' + esc(im.credit) + '</a>' : esc(im.credit);
+    return '<figure class="ph"><img src="' + esc(im.src) + '" width="' + im.w + '" height="' + im.h + '" alt="" loading="lazy" decoding="async"><figcaption>' + esc(T[lang].photo) + ' : ' + cr + '</figcaption></figure>';
   }
-  var ORDER = ['arrival','tv','trash','parking','guestcard','walks','food','transport','emergency','contact','checkout'];
+  function telLink(n){ return '<a href="tel:' + esc(String(n).replace(/[^+\d]/g,'')) + '">' + esc(n) + '</a>'; }
+  function render_blocks(sec, lang, S){
+    var t = T[lang], vars = {checkin: S.checkin || '15:00', checkout: S.checkout || '11:00'};
+    return (D.c[sec][lang] || []).map(function(b){
+      var k = b[0], v = b[1];
+      if (k === 'p') return '<p>' + esc(fill(v, vars)) + '</p>';
+      if (k === 'h') return '<h3>' + esc(v) + '</h3>';
+      if (k === 'ul') return '<ul>' + v.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+      if (k === 'ol') return '<ol class="legend">' + v.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
+      if (k === 'todo') return todo(v);
+      if (k === 'img') return figure(v, lang);
+      if (k === 'remote') return '<div class="remote-wrap">' + REMOTE + '</div>';
+      if (k === 'map') return '<div class="map" id="map" role="region" aria-label="Map"></div><div class="map-legend"><span><i class="dot home"></i>' + esc(t.map_home) + '</span><span><i class="dot park"></i>' + esc(t.map_park) + '</span><span><i class="dash"></i>' + esc(t.map_walk) + '</span></div>';
+      if (k === 'walk') return '<article class="walk">' + figure(v.img, lang) + '<div class="walk-b"><span class="lvl ' + v.level + '">' + esc(t[v.level]) + '</span><h3>' + esc(v.name) + '</h3><p class="facts">' + esc(v.facts) + '</p>' + v.text.map(function(x){ return '<p>' + esc(x) + '</p>'; }).join('') + '</div></article>';
+      if (k === 'resto'){
+        var img = D.restoImg.indexOf(v.id) >= 0 ? '<img class="rimg" src="img/resto-' + esc(v.id) + '.jpg" alt="" loading="lazy">' : '';
+        return '<article class="resto">' + img + '<div><h3>' + esc(v.name) + '</h3><p>' + esc(v.text) + '</p>' + '<p class="facts">' + (v.tel ? esc(t.tel) + ' ' + telLink(v.tel) + ' · ' : '') + '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + encodeURIComponent(D.mapsQ[v.id] || v.name) + '" target="_blank" rel="noopener">' + esc(t.maps) + '</a></p></div></article>';
+      }
+      if (k === 'tel') return '<ul>' + v.map(function(e){ return '<li>' + esc(e[0]) + ' ' + telLink(e[1]) + '</li>'; }).join('') + '</ul>';
+      if (k === 'contact'){
+        if (S.hostPhone) return '<p>' + esc(fill(v[0],{phone:'\u0000'})).replace('\u0000', telLink(S.hostPhone)) + '</p>';
+        return '<p>' + esc(v[1]) + '</p>';
+      }
+      if (k === 'thanks') return '<p>' + esc(t.thanks) + '</p>';
+      return '';
+    }).join('');
+  }
 
+  var FLOURISH = "<svg class=\"flourish\" viewBox=\"0 0 320 44\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n<path stroke-width=\"1.3\" d=\"M8 30c22-1 38-6 58-6 18 0 26 7 42 7 12 0 18-4 24-8\"/>\n<path stroke-width=\"1.3\" d=\"M312 30c-22-1-38-6-58-6-18 0-26 7-42 7-12 0-18-4-24-8\"/>\n<path stroke-width=\"1.5\" d=\"M141 33c6-5 13-5 19 0s13 5 19 0\"/>\n<path stroke-width=\"1.3\" d=\"M151 24c-5-4 4-7 0-12M160 23c-5-4 5-8 0-14M169 24c-5-4 4-7 0-12\"/>\n<circle cx=\"66\" cy=\"24\" r=\"1.4\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"254\" cy=\"24\" r=\"1.4\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>";
   function render(){
     var S = state.settings || {};
     var stay = currentStay(state.stays);
@@ -263,40 +130,51 @@
     var shown = joinNames(names, lang);
     var w = names.length ? ((names.length > 1 && t.welcomeNamedPlural) ? t.welcomeNamedPlural : t.welcomeNamed) : t.welcomeAnon;
     var h = '<div class="wrap">';
-    h += '<header class="top"><div class="brand">Cosy Nest</div><div class="right">' +
-         '<div class="langs" role="group" aria-label="Language">' +
-         LANGS.map(function(l){ return '<button type="button" data-lang="' + l + '" aria-pressed="' + (l === lang) + '" lang="' + l + '">' + T[l].name + '</button>'; }).join('') +
-         '</div></div></header>';
+    h += '<header class="top"><div class="brand">Cosy Nest</div><div class="langs" role="group" aria-label="Language">' +
+         LANGS.map(function(l){ return '<button type="button" data-lang="' + l + '" aria-pressed="' + (l === lang) + '" lang="' + l + '">' + T[l].name + '</button>'; }).join('') + '</div></header>';
     h += '<section class="hero"><h1>';
     if (loading && !names.length) h += esc(t.welcomeAnon[0]) + '<br><span class="skel"></span>';
     else h += esc(fill(w[0],{name:shown})) + '<br>' + esc(fill(w[1],{name:shown}));
-    h += '</h1>';
-    h += '<p class="intro">' + esc(t.intro) + '</p>';
-    h += '<p class="place">' + esc(t.place) + '</p>';
+    h += '</h1><p class="intro">' + esc(t.intro) + '</p><p class="place">' + esc(t.place) + '</p>';
     if (stay && !qs.nom){
-      var y = todayISO().slice(0,4);
-      var sameYear = stay.from.slice(0,4) === y && stay.to.slice(0,4) === y;
+      var y = todayISO().slice(0,4), sameYear = stay.from.slice(0,4) === y && stay.to.slice(0,4) === y;
       h += '<p class="stay">' + esc(fill(t.stay,{from:fmtDate(stay.from,lang,!sameYear), to:fmtDate(stay.to,lang,!sameYear)})) + '</p>';
     }
-    h += '<svg class="ridge" viewBox="0 0 360 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M0 34 L42 20 L68 28 L108 7 L138 19 L176 3 L204 17 L242 9 L276 25 L312 13 L360 30"/></svg>';
-    h += '</section>';
+    h += FLOURISH + '</section>';
     h += '<section class="card"><h2>Wi\u2011Fi</h2>';
     if (S.wifiName || S.wifiPass){
       if (S.wifiName) h += '<div class="kv first"><div><span class="k">' + esc(t.network) + '</span><span class="v" id="wifiName">' + esc(S.wifiName) + '</span></div><button type="button" class="copy" data-copy="wifiName">' + esc(t.copy) + '</button></div>';
       if (S.wifiPass) h += '<div class="kv' + (S.wifiName ? '' : ' first') + '"><div><span class="k">' + esc(t.password) + '</span><span class="v" id="wifiPass">' + esc(S.wifiPass) + '</span></div><button type="button" class="copy" data-copy="wifiPass">' + esc(t.copy) + '</button></div>';
     } else if (loading) h += '<div class="kv first"><div><span class="k">' + esc(t.network) + '</span><span class="v"><span class="skel"></span></span></div></div>';
-    else h += todo(TODO.wifi);
-    h += '</section>';
-    h += '<div class="topics">' + ORDER.map(function(id){
-      return '<details class="topic" data-id="' + id + '"><summary>' + esc(t.titles[id]) + '</summary><div class="body">' + sectionBody(id, t, S) + '</div></details>';
+    else h += todo('wifi');
+    h += '</section><div class="topics">' + D.order.map(function(id){
+      return '<details class="topic" data-id="' + id + '"><summary>' + esc(t.titles[id]) + '</summary><div class="body">' + render_blocks(id, lang, S) + '</div></details>';
     }).join('') + '</div>';
-    h += '<footer class="bottom">Cosy Nest<br>Zur Gasse 87, 3954 Leukerbad</footer>';
-    h += '</div>';
+    h += '<footer class="bottom">Cosy Nest<br>Zur Gasse 87, 3954 Leukerbad</footer></div>';
     var app = document.getElementById('app');
     var open = {}; app.querySelectorAll('details.topic[open]').forEach(function(d){ open[d.dataset.id] = true; });
+    if (map) { try { map.remove(); } catch(e){} map = null; }
     app.innerHTML = h;
-    app.querySelectorAll('details.topic').forEach(function(d){ if (open[d.dataset.id]) d.open = true; });
+    app.querySelectorAll('details.topic').forEach(function(d){
+      if (open[d.dataset.id]) d.open = true;
+      d.addEventListener('toggle', function(){ if (d.open && d.dataset.id === 'parking') initMap(lang); });
+    });
+    if (open.parking) initMap(lang);
     wire(lang);
+  }
+
+  var map = null;
+  function initMap(lang){
+    var el = document.getElementById('map');
+    if (!el || map || !window.L) return;
+    var t = T[lang];
+    map = L.map(el, {scrollWheelZoom:false, attributionControl:true});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+    var line = L.polyline(D.map.route, {color:'#2F6F79', weight:4, dashArray:'2 8', lineCap:'round'}).addTo(map);
+    function pin(cls, label){ return L.divIcon({className:'', html:'<span class="pin ' + cls + '">' + label + '</span>', iconSize:[30,30], iconAnchor:[15,15]}); }
+    L.marker(D.map.home, {icon: pin('home', '\u2302')}).addTo(map).bindPopup(esc(t.map_home));
+    L.marker(D.map.park, {icon: pin('park', 'P')}).addTo(map).bindPopup(esc(t.map_park) + '<br>Römerweg 5');
+    map.fitBounds(line.getBounds(), {padding:[40,40], maxZoom:17});
   }
 
   function wire(lang){
@@ -308,12 +186,9 @@
       b.addEventListener('click', function(){
         var v = document.getElementById(b.dataset.copy).textContent;
         var done = function(){ var old = b.textContent; b.textContent = T[lang].copied; setTimeout(function(){ b.textContent = old; }, 1600); };
-        try { navigator.clipboard.writeText(v).then(done, function(){ selectText(b.dataset.copy); }); } catch(e){ selectText(b.dataset.copy); }
+        try { navigator.clipboard.writeText(v).then(done, function(){}); } catch(e){}
       });
     });
-  }
-  function selectText(id){
-    try { var r = document.createRange(); r.selectNodeContents(document.getElementById(id)); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){}
   }
 
   render();
