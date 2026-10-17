@@ -34,7 +34,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:.75
 .hero .intro{max-width:32rem;font-family:Caveat,"Segoe Script","Bradley Hand",cursive;font-size:1.6rem;line-height:1.25}
 .hero .place{color:var(--muted)}
 .hero .stay{font-weight:700}
-.flourish{display:block;width:min(100%,19rem);height:auto;margin:1.4rem 0 1.6rem;color:var(--accent)}
+.hero-art{display:block;width:100%;height:auto;aspect-ratio:1543/784;object-fit:cover;border-radius:16px;margin:1.5rem 0 1.8rem;background:#F0E4D3}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem .5rem;margin:0 0 1.5rem}
 .card h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 .4rem}
 .card .todo{margin-bottom:.6rem}
@@ -96,6 +96,8 @@ a.plain{color:var(--water);font-weight:700;text-decoration:none;font-size:.9rem}
 .card.adm{padding-bottom:1.1rem}
 
 /* --- contenu enrichi --- */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-art{filter:brightness(.82)}}
+:root[data-theme="dark"] .hero-art{filter:brightness(.82)}
 .body h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:1.12rem;margin:1.1rem 0 .4rem}
 .body ol.legend{margin:0 0 .9rem;padding-left:1.4rem}
 .body ol.legend li{margin:0 0 .35rem}
