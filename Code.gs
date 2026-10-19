@@ -12,6 +12,9 @@ var SHEET_STAYS = 'sejours';
 var SHEET_SETTINGS = 'reglages';
 var STAY_HEADERS = ['prenoms', 'langue', 'arrivee', 'depart'];
 var SETTING_KEYS = ['wifiName', 'wifiPass', 'checkin', 'checkout', 'hostPhone', 'parkingSpot'];
+var SHEET_VISITS = 'visites';
+var VISIT_HEADERS = ['date', 'sejour', 'ville', 'region', 'pays', 'appareil', 'langue'];
+var MAX_VISITS = 2000;
 
 function doGet(e) {
   return json_(readState_());
@@ -20,11 +23,13 @@ function doGet(e) {
 function doPost(e) {
   var body = {};
   try { body = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) {}
+  if (body.action === 'visit') { logVisit_(body); return json_({ ok: true }); }
   if (String(body.password || '') !== ADMIN_PASSWORD) {
     Utilities.sleep(800); // ralentit les essais de mot de passe
     return json_({ ok: false, error: 'bad_password' });
   }
   if (body.action === 'login') return json_({ ok: true, state: readState_() });
+  if (body.action === 'visits') return json_({ ok: true, visits: readVisits_() });
   if (body.action === 'save') { writeState_(body.state || {}); return json_({ ok: true, state: readState_() }); }
   return json_({ ok: false, error: 'bad_action' });
 }
@@ -89,4 +94,30 @@ function writeState_(state) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function logVisit_(b) {
+  var clip = function (x) { return String(x == null ? '' : x).slice(0, 80); };
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var sh = sheet_(SHEET_VISITS, VISIT_HEADERS);
+    var now = Utilities.formatDate(new Date(), 'Europe/Zurich', 'yyyy-MM-dd HH:mm');
+    sh.appendRow(["'" + now, clip(b.stay), clip(b.city), clip(b.region), clip(b.country), clip(b.device), clip(b.lang)]);
+    var n = sh.getLastRow();
+    if (n > MAX_VISITS + 1) sh.deleteRows(2, n - MAX_VISITS - 1);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function readVisits_() {
+  var sh = sheet_(SHEET_VISITS, VISIT_HEADERS);
+  var n = sh.getLastRow() - 1;
+  if (n < 1) return [];
+  var k = Math.min(n, 300);
+  var rows = sh.getRange(sh.getLastRow() - k + 1, 1, k, VISIT_HEADERS.length).getDisplayValues();
+  return rows.reverse().map(function (r) {
+    return { date: r[0], stay: r[1], city: r[2], region: r[3], country: r[4], device: r[5], lang: r[6] };
+  });
 }

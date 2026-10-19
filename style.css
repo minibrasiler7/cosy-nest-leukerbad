@@ -116,6 +116,7 @@ a.plain{color:var(--water);font-weight:700;text-decoration:none;font-size:.9rem}
 figure.ph{margin:.3rem 0 .9rem}
 figure.ph img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--line)}
 figure.ph.tall{width:78%;margin-left:auto;margin-right:auto}
+footer.bottom small{display:block;margin-top:.8rem;font-size:.78rem;line-height:1.4}
 .hero .intro{font-size:1.45rem;margin:0 0 .6rem}
 .hero .intro a{color:inherit;text-decoration-thickness:1px;text-underline-offset:3px}
 figure.ph figcaption{font-size:.74rem;color:var(--muted);margin-top:.3rem}

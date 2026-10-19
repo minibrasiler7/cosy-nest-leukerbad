@@ -35,6 +35,11 @@
 .month li{display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-top:1px solid var(--line);font-size:.92rem}
 .month i{flex-shrink:0;width:.8rem;height:.8rem;border-radius:3px}
 .legend{font-size:.8rem;color:var(--muted);margin:.6rem 0 0}
+.visit{padding:.55rem 0;border-top:1px solid var(--line)}
+.visit:first-child{border-top:0}
+.visit b{display:block}
+.visit small{color:var(--muted)}
+.vday{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:capitalize;margin:.9rem 0 .2rem}
 </style>
 </head>
 <body>
@@ -45,7 +50,7 @@
   var LANG_LABEL = {auto:'Auto (langue du téléphone)', fr:'Français', de:'Allemand', en:'Anglais', it:'Italien', es:'Espagnol'};
   var COLORS = ['#2F6F79','#B8792A','#6B4E9B','#3E7D4E','#A4483B','#3D5A99','#8A6D1F'];
   var app = document.getElementById('app');
-  var password = null, state = {stays:[], settings:{}}, tab = 'list', calMonth = null, busy = false;
+  var password = null, state = {stays:[], settings:{}}, tab = 'list', calMonth = null, busy = false, visits = null, visitsErr = '';
   try { password = sessionStorage.getItem('cn-pass'); } catch(e){}
   try { tab = sessionStorage.getItem('cn-tab') || 'list'; } catch(e){}
 
@@ -92,7 +97,7 @@
     if (!pw){ st.textContent = 'Mot de passe manquant.'; st.className = 'status err'; return; }
     st.className = 'status'; st.textContent = 'Connexion…';
     api('POST', {action:'login', password: pw}).then(function(r){
-      if (r && r.ok){ password = pw; try { sessionStorage.setItem('cn-pass', pw); } catch(e){} state = r.state || state; render(); }
+      if (r && r.ok){ password = pw; try { sessionStorage.setItem('cn-pass', pw); localStorage.setItem('cn-host', '1'); } catch(e){} state = r.state || state; if (tab === 'log') loadVisits(); render(); }
       else { try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(r && r.error === 'bad_password' ? 'Mot de passe incorrect.' : 'Réponse inattendue du script.'); }
     }, function(e){ renderLogin(e && e.code === 'timeout' ? 'Le script Google ne répond pas. Réessayez.' : 'Connexion impossible.'); });
   }
@@ -158,6 +163,31 @@
     h += '</section>';
     return h;
   }
+  var DEV = {mobile:'Téléphone', tablette:'Tablette', ordinateur:'Ordinateur'};
+  var LNG = {fr:'FR', de:'DE', en:'EN', it:'IT', es:'ES'};
+  function loadVisits(){
+    visits = null; visitsErr = '';
+    api('POST', {action:'visits', password: password}).then(function(r){
+      if (r && r.ok){ visits = r.visits || []; }
+      else visitsErr = 'Le journal n’est pas disponible. Le script Google doit être mis à jour.';
+      if (tab === 'log') render();
+    }, function(){ visitsErr = 'Chargement impossible. Réessayez.'; if (tab === 'log') render(); });
+  }
+  function viewLog(){
+    var h = '<section class="card adm"><div class="cal-head"><h3 style="font-family:inherit;font-size:1rem;font-weight:700;text-transform:none">Connexions au site voyageurs</h3><button type="button" class="btn" id="logReload">Actualiser</button></div>';
+    h += '<p class="hint">Une ligne par visite (une seule fois par session). Vos propres visites, depuis un appareil connecté à l’espace hôte, ne sont pas comptées. Le lieu est approximatif : il vient de l’adresse internet.</p>';
+    if (visitsErr) return h + '<p class="status err">' + esc(visitsErr) + '</p></section>';
+    if (!visits) return h + '<p class="status">Chargement…</p></section>';
+    if (!visits.length) return h + '<p class="hint">Aucune connexion enregistrée pour l’instant.</p></section>';
+    var lastDay = '';
+    visits.forEach(function(v){
+      var day = String(v.date).slice(0, 10), time = String(v.date).slice(11, 16);
+      if (day !== lastDay){ h += '<div class="vday">' + esc(fmt(day, {weekday:'long', day:'numeric', month:'long'})) + '</div>'; lastDay = day; }
+      var where = [v.city, v.country].filter(Boolean).join(', ') || 'Lieu inconnu';
+      h += '<div class="visit"><b>' + esc(time) + ' · ' + esc(where) + '</b><small>' + esc(v.stay || 'Aucun séjour en cours') + ' · ' + esc(DEV[v.device] || v.device || '') + (v.lang ? ' · ' + esc(LNG[v.lang] || v.lang) : '') + (v.region ? ' · ' + esc(v.region) : '') + '</small></div>';
+    });
+    return h + '</section>';
+  }
   function viewSettings(){
     var s = state.settings || {};
     return '<section class="card adm"><h3>Réglages</h3><div class="grid">' +
@@ -171,14 +201,15 @@
   }
 
   function render(){
-    var tabs = [['list','Séjours'],['cal','Calendrier'],['add','Ajouter'],['set','Réglages']];
+    var tabs = [['list','Séjours'],['cal','Calendrier'],['add','Ajouter'],['log','Connexions'],['set','Réglages']];
     var h = head() + '<div class="topbar"><h1 style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
     h += '<div class="tabs" role="tablist">' + tabs.map(function(t){ return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
     h += '<p class="status" id="admStatus" role="status"></p>';
-    h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : viewList();
+    h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : tab === 'log' ? viewLog() : viewList();
     app.innerHTML = h;
     document.getElementById('logout').addEventListener('click', function(){ password = null; try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(); });
-    app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} render(); }); });
+    app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} if (tab === 'log') loadVisits(); render(); }); });
+    var lr = document.getElementById('logReload'); if (lr) lr.addEventListener('click', function(){ loadVisits(); render(); });
     app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){
       var s = state.stays[+b.dataset.del]; if (!s) return;
       if (!confirm('Supprimer le séjour de ' + namesOf(s).join(', ') + ' ?')) return;
