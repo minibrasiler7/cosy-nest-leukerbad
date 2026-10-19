@@ -115,6 +115,9 @@ a.plain{color:var(--water);font-weight:700;text-decoration:none;font-size:.9rem}
 .remote .callout text{font:700 11px "Atkinson Hyperlegible",system-ui,sans-serif;fill:#fff;text-anchor:middle}
 figure.ph{margin:.3rem 0 .9rem}
 figure.ph img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--line)}
+figure.ph.tall{width:78%;margin-left:auto;margin-right:auto}
+.hero .intro{font-size:1.45rem;margin:0 0 .6rem}
+.hero .intro a{color:inherit;text-decoration-thickness:1px;text-underline-offset:3px}
 figure.ph figcaption{font-size:.74rem;color:var(--muted);margin-top:.3rem}
 figure.ph figcaption a{color:var(--muted)}
 .walk{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:.75rem .75rem .2rem;margin:0 0 1rem}
