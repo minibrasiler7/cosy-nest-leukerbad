@@ -41,20 +41,26 @@
 .visit small{color:var(--muted)}
 .trk-wrap{overflow-x:auto;margin:0 -.2rem}
 .trk{border-collapse:collapse;width:100%;font-size:.88rem}
-.trk th,.trk td{padding:.45rem .25rem;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap}
+.trk th,.trk td{padding:.45rem .12rem;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap}
 .trk th{font-size:.75rem;color:var(--muted);font-weight:700}
-.trk td.n,.trk th.n{text-align:left;white-space:normal;min-width:7rem}
+.trk td.n,.trk th.n{text-align:left;white-space:normal;min-width:5.6rem;padding-right:.25rem}
 .trk td.n b{display:block}
-.trk select.who{font:inherit;font-size:.86rem;font-weight:700;color:inherit;background:transparent;border:1px dashed var(--line);border-radius:6px;padding:.1rem .1rem;margin:0 0 .1rem -.2rem;width:100%;max-width:9rem;cursor:pointer}
+.trk select.who{font:inherit;font-size:.86rem;font-weight:700;color:inherit;background:transparent;border:1px dashed var(--line);border-radius:6px;padding:.1rem .1rem;margin:0 0 .1rem -.2rem;width:100%;max-width:7rem;cursor:pointer}
 .trk td.n small{color:var(--muted)}
-.trk input{width:1.15rem;height:1.15rem;accent-color:#3E7D4E;cursor:pointer}
+.todo-name{font-style:italic;color:var(--accent)}
+.stay{flex-wrap:wrap}
+.stay>div:first-child{flex:1 1 13rem;min-width:0}
+.stay .acts{display:flex;gap:.35rem;flex-shrink:0}
+.stay .acts .btn{padding:.4rem .75rem;font-size:.85rem}
+.trk input{width:1.05rem;height:1.05rem;accent-color:#3E7D4E;cursor:pointer}
 .trk tr.done td{opacity:.55}
 .trk .next{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 .steps{margin:.2rem 0 .8rem;padding-left:1.3rem;font-size:.86rem;color:var(--muted)}
 .steps li{margin:0 0 .15rem}
-.bar{display:inline-block;min-width:2.3rem;font-size:.75rem;font-weight:700;padding:.1rem .35rem;border-radius:999px;background:var(--bg)}
+.bar{display:inline-block;min-width:1.9rem;font-size:.75rem;font-weight:700;padding:.1rem .35rem;border-radius:999px;background:var(--bg)}
 .bar.full{background:#DCEFE3;color:#1E5A36}
 .legend label{display:flex;align-items:center;gap:.45rem;cursor:pointer}
+.legend label input{width:auto;flex:none}
 .vday{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:capitalize;margin:.9rem 0 .2rem}
 </style>
 </head>
@@ -66,7 +72,7 @@
   var LANG_LABEL = {auto:'Auto (langue du téléphone)', fr:'Français', de:'Allemand', en:'Anglais', it:'Italien', es:'Espagnol'};
   var COLORS = ['#2F6F79','#B8792A','#6B4E9B','#3E7D4E','#A4483B','#3D5A99','#8A6D1F'];
   var app = document.getElementById('app');
-  var password = null, state = {stays:[], settings:{}}, tab = 'list', calMonth = null, busy = false, visits = null, visitsErr = '';
+  var password = null, state = {stays:[], settings:{}}, tab = 'list', calMonth = null, busy = false, visits = null, visitsErr = '', editIdx = -1;
   try { password = sessionStorage.getItem('cn-pass'); } catch(e){}
   try { tab = sessionStorage.getItem('cn-tab') || 'list'; } catch(e){}
 
@@ -133,9 +139,9 @@
 
   function stayRow(s, i){
     var today = todayISO(), cur = s.from <= today && today <= s.to;
-    return '<div class="stay"><div><b>' + esc(namesOf(s).join(', ')) + (cur ? '<span class="tag">en cours</span>' : '') + '</b>' +
+    return '<div class="stay"><div><b>' + (namesOf(s).length ? esc(namesOf(s).join(', ')) : '<span class="todo-name">Prénoms à compléter</span>') + (cur ? '<span class="tag">en cours</span>' : '') + '</b>' +
       '<small>' + esc(fmt(s.from)) + ' → ' + esc(fmt(s.to)) + ' · ' + nights(s) + ' nuit' + (nights(s) > 1 ? 's' : '') + ' · ' + esc((s.lang || 'auto') === 'auto' ? 'langue auto' : LANG_LABEL[s.lang]) + '</small></div>' +
-      '<button type="button" class="btn" data-del="' + i + '" aria-label="Supprimer">Supprimer</button></div>';
+      '<div class="acts"><button type="button" class="btn" data-edit="' + i + '">Modifier</button><button type="button" class="btn" data-del="' + i + '" aria-label="Supprimer">Supprimer</button></div></div>';
   }
 
   function viewList(){
@@ -149,12 +155,17 @@
     return h;
   }
   function viewAdd(){
-    return '<section class="card adm"><h3>Ajouter un séjour</h3><p class="hint">Le séjour est enregistré dès que vous cliquez sur « Ajouter ». Le jour d’un changement, le séjour qui se termine reste affiché jusqu’à midi.</p><div class="grid">' +
-      '<div class="full"><label for="nNames">Prénoms (séparés par une virgule)</label><input id="nNames" autocomplete="off" placeholder="Marie, Thomas"></div>' +
-      '<div class="full"><label for="nLang">Langue</label><select id="nLang">' + Object.keys(LANG_LABEL).map(function(k){ return '<option value="' + k + '">' + esc(LANG_LABEL[k]) + '</option>'; }).join('') + '</select></div>' +
-      '<div><label for="nFrom">Arrivée</label><input id="nFrom" type="date"></div>' +
-      '<div><label for="nTo">Départ</label><input id="nTo" type="date"></div>' +
-      '<div class="full"><button type="button" class="btn primary" id="admAdd">Ajouter</button></div></div></section>';
+    var e = editIdx >= 0 ? state.stays[editIdx] : null;
+    if (editIdx >= 0 && !e) editIdx = -1;
+    var lang = e ? (e.lang || 'auto') : 'auto';
+    return '<section class="card adm"><h3>' + (e ? 'Modifier le séjour' : 'Ajouter un séjour') + '</h3><p class="hint">' +
+      (e ? 'Complétez ou corrigez les informations, puis enregistrez. Les étapes du suivi sont conservées.' : 'Réservation confirmée mais sans les infos du client ? Ajoutez-la avec les dates seulement : les prénoms pourront être ajoutés plus tard avec « Modifier ».') +
+      ' Le séjour est enregistré dès que vous cliquez sur le bouton.</p><div class="grid">' +
+      '<div class="full"><label for="nNames">Prénoms (séparés par une virgule, facultatif)</label><input id="nNames" autocomplete="off" placeholder="Marie, Thomas" value="' + esc(e ? namesOf(e).join(', ') : '') + '"></div>' +
+      '<div class="full"><label for="nLang">Langue</label><select id="nLang">' + Object.keys(LANG_LABEL).map(function(k){ return '<option value="' + k + '"' + (k === lang ? ' selected' : '') + '>' + esc(LANG_LABEL[k]) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label for="nFrom">Arrivée</label><input id="nFrom" type="date" value="' + esc(e ? e.from : '') + '"></div>' +
+      '<div><label for="nTo">Départ</label><input id="nTo" type="date" value="' + esc(e ? e.to : '') + '"></div>' +
+      '<div class="full"><button type="button" class="btn primary" id="admAdd">' + (e ? 'Enregistrer les modifications' : 'Ajouter') + '</button>' + (e ? ' <button type="button" class="btn" id="admCancel">Annuler</button>' : '') + '</div></div></section>';
   }
   function viewCal(){
     var t = todayISO();
@@ -169,7 +180,7 @@
       var d = new Date(start); d.setUTCDate(start.getUTCDate() + i); var ds = iso(d);
       var evs = st.filter(function(s){ return s.from <= ds && ds <= s.to; });
       h += '<div class="day' + (d.getUTCMonth() !== m ? ' out' : '') + (ds === t ? ' today' : '') + '"><span class="num">' + d.getUTCDate() + '</span>' +
-        evs.map(function(s){ var cls = s.from === ds ? ' in' : (s.to === ds ? ' outd' : ''); return '<span class="ev' + cls + '" style="background:' + colorOf(s) + '" title="' + esc(namesOf(s).join(', ')) + '">' + esc(namesOf(s)[0]) + '</span>'; }).join('') + '</div>';
+        evs.map(function(s){ var cls = s.from === ds ? ' in' : (s.to === ds ? ' outd' : ''); return '<span class="ev' + cls + '" style="background:' + colorOf(s) + '" title="' + esc(namesOf(s).join(', ')) + '">' + esc(namesOf(s)[0] || '?') + '</span>'; }).join('') + '</div>';
       if (i >= 34 && d.getUTCMonth() !== m) break;
     }
     var mStart = calMonth + '-01', mEnd = iso(new Date(Date.UTC(y, m + 1, 0)));
@@ -204,27 +215,27 @@
     });
     return h + '</section>';
   }
-  var STEPS = ['Infos saisies sur le site admin', 'Taxe de séjour envoyée sur Airbnb ou Booking', 'Message au client : payer la taxe de séjour', 'Taxe de séjour payée (confirmée)', 'Guest Cards remplies sur le site de Leukerbad', 'Message au client : Guest Cards envoyées'];
+  var STEPS = ['Réservation confirmée', 'Infos du client saisies sur le site admin', 'Taxe de séjour envoyée sur Airbnb ou Booking', 'Message au client : payer la taxe de séjour', 'Taxe de séjour payée (confirmée)', 'Guest Cards remplies sur le site de Leukerbad', 'Message au client : Guest Cards envoyées'];
   function stepsOf(s){ return Array.isArray(s.steps) ? s.steps : []; }
-  function contactOf(s){ var n = namesOf(s); return n.indexOf(s.contact) >= 0 ? s.contact : (n[0] || '?'); }
+  function contactOf(s){ var n = namesOf(s); return n.indexOf(s.contact) >= 0 ? s.contact : (n[0] || 'réservation sans prénom'); }
   function viewTrack(){
     var today = todayISO(), showAll = false;
     try { showAll = sessionStorage.getItem('cn-trk-all') === '1'; } catch(e){}
-    var list = sorted().filter(function(s){ return showAll || s.to >= today || stepsOf(s).length < 5; });
+    var list = sorted().filter(function(s){ return showAll || s.to >= today || stepsOf(s).length < 6; });
     var h = '<section class="card adm"><h3>Suivi des réservations</h3>';
-    h += '<ol class="steps">' + STEPS.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
-    h += '<p class="hint">Cochez une case dès qu’une étape est faite : c’est enregistré tout de suite. L’étape 1 est cochée automatiquement quand le séjour est ajouté. Le cadre doré indique la prochaine étape.</p>';
+    h += '<ol class="steps">' + STEPS.map(function(x, i){ return '<li value="' + i + '">' + esc(x) + '</li>'; }).join('') + '</ol>';
+    h += '<p class="hint">Cochez une case dès qu’une étape est faite : c’est enregistré tout de suite. L’étape 0 est cochée dès que la réservation est ajoutée. L’étape 1 se coche toute seule quand les prénoms sont saisis. Le cadre doré indique la prochaine étape.</p>';
     if (!list.length) return h + '<p class="hint">Aucune réservation à suivre.</p></section>';
-    h += '<div class="trk-wrap"><table class="trk"><thead><tr><th class="n">Réservation</th>' + STEPS.map(function(x, i){ return '<th title="' + esc(x) + '">' + (i + 1) + '</th>'; }).join('') + '<th></th></tr></thead><tbody>';
+    h += '<div class="trk-wrap"><table class="trk"><thead><tr><th class="n">Réservation</th>' + STEPS.map(function(x, i){ return '<th title="' + esc(x) + '">' + i + '</th>'; }).join('') + '<th></th></tr></thead><tbody>';
     list.forEach(function(s){
       var i = state.stays.indexOf(s), st = stepsOf(s), done = st.length + 1, next = 0;
-      for (var k = 2; k <= 6; k++) if (st.indexOf(k) < 0){ next = k; break; }
-      h += '<tr' + (done === 6 ? ' class="done"' : '') + '><td class="n">' + (namesOf(s).length > 1 ? '<select class="who" data-contact="' + i + '"' + (busy ? ' disabled' : '') + ' aria-label="Prénom affiché">' + namesOf(s).map(function(n){ return '<option' + (n === contactOf(s) ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' : '<b>' + esc(contactOf(s)) + '</b>') + '<small>' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</small></td>';
+      for (var k = 1; k <= 6; k++) if (st.indexOf(k) < 0){ next = k; break; }
+      h += '<tr' + (done === 7 ? ' class="done"' : '') + '><td class="n">' + (namesOf(s).length > 1 ? '<select class="who" data-contact="' + i + '"' + (busy ? ' disabled' : '') + ' aria-label="Prénom affiché">' + namesOf(s).map(function(n){ return '<option' + (n === contactOf(s) ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' : (namesOf(s).length ? '<b>' + esc(contactOf(s)) + '</b>' : '<b class="todo-name">À compléter</b>')) + '<small>' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</small></td>';
       h += '<td><input type="checkbox" checked disabled aria-label="' + esc(STEPS[0]) + '"></td>';
-      for (var k2 = 2; k2 <= 6; k2++){
+      for (var k2 = 1; k2 <= 6; k2++){
         h += '<td><input type="checkbox" data-stay="' + i + '" data-step="' + k2 + '"' + (st.indexOf(k2) >= 0 ? ' checked' : '') + (k2 === next ? ' class="next"' : '') + (busy ? ' disabled' : '') + ' aria-label="' + esc(STEPS[k2 - 1]) + '"></td>';
       }
-      h += '<td><span class="bar' + (done === 6 ? ' full' : '') + '">' + done + '/6</span></td></tr>';
+      h += '<td><span class="bar' + (done === 7 ? ' full' : '') + '">' + done + '/7</span></td></tr>';
     });
     h += '</tbody></table></div>';
     h += '<p class="legend"><label><input type="checkbox" id="trkAll"' + (showAll ? ' checked' : '') + '> Afficher aussi les séjours terminés et complets</label></p></section>';
@@ -250,7 +261,7 @@
     h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : tab === 'log' ? viewLog() : tab === 'track' ? viewTrack() : viewList();
     app.innerHTML = h;
     document.getElementById('logout').addEventListener('click', function(){ password = null; try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(); });
-    app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} if (tab === 'log') loadVisits(); render(); }); });
+    app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; editIdx = -1; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} if (tab === 'log') loadVisits(); render(); }); });
     app.querySelectorAll('input[data-step]').forEach(function(cb){ cb.addEventListener('change', function(){
       if (busy) { cb.checked = !cb.checked; return; }
       var i = +cb.dataset.stay, k = +cb.dataset.step;
@@ -281,13 +292,26 @@
     var add = document.getElementById('admAdd');
     if (add) add.addEventListener('click', function(){
       var names = namesOf({name: document.getElementById('nNames').value}), from = document.getElementById('nFrom').value, to = document.getElementById('nTo').value, l = document.getElementById('nLang').value;
-      if (!names.length || !from || !to){ setStatus('Prénom, arrivée et départ sont obligatoires.', true); return; }
+      if (!from || !to){ setStatus('Les dates d’arrivée et de départ sont obligatoires.', true); return; }
       if (to <= from){ setStatus('La date de départ doit être après l’arrivée.', true); return; }
-      var clash = state.stays.filter(function(s){ return s.from < to && from < s.to; });
-      if (clash.length && !confirm('Ce séjour chevauche celui de ' + namesOf(clash[0]).join(', ') + '. Ajouter quand même ?')) return;
-      tab = 'list'; try { sessionStorage.setItem('cn-tab', tab); } catch(e){}
-      save({stays: state.stays.concat([{names:names, lang:l, from:from, to:to, steps:[]}]), settings: state.settings}, 'Séjour ajouté et enregistré.');
+      var ei = editIdx;
+      var clash = state.stays.filter(function(s, j){ return j !== ei && s.from < to && from < s.to; });
+      if (clash.length && !confirm('Ce séjour chevauche celui de ' + (namesOf(clash[0]).join(', ') || 'une autre réservation') + '. Enregistrer quand même ?')) return;
+      var withInfo = function(st){ st = st.slice(); if (names.length && st.indexOf(1) < 0) st.push(1); return st.sort(); };
+      var stays, msg;
+      if (ei >= 0 && state.stays[ei]){
+        var old = state.stays[ei];
+        stays = state.stays.map(function(x, j){ return j === ei ? Object.assign({}, x, {names:names, lang:l, from:from, to:to, steps: withInfo(stepsOf(x)), contact: names.indexOf(x.contact) >= 0 ? x.contact : ''}) : x; });
+        msg = 'Séjour modifié et enregistré.';
+      } else {
+        stays = state.stays.concat([{names:names, lang:l, from:from, to:to, steps: withInfo([]), contact:''}]);
+        msg = names.length ? 'Séjour ajouté et enregistré.' : 'Réservation ajoutée. Pensez à compléter les prénoms avec « Modifier ».';
+      }
+      editIdx = -1; tab = 'list'; try { sessionStorage.setItem('cn-tab', tab); } catch(e){}
+      save({stays: stays, settings: state.settings}, msg);
     });
+    var cc = document.getElementById('admCancel'); if (cc) cc.addEventListener('click', function(){ editIdx = -1; tab = 'list'; render(); });
+    app.querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click', function(){ editIdx = +b.dataset.edit; tab = 'add'; render(); window.scrollTo(0, 0); }); });
     var ss = document.getElementById('sSave');
     if (ss) ss.addEventListener('click', function(){
       var v = function(id){ return document.getElementById(id).value.trim(); };
