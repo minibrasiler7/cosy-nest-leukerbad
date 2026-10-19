@@ -43,8 +43,9 @@
 .trk{border-collapse:collapse;width:100%;font-size:.88rem}
 .trk th,.trk td{padding:.45rem .25rem;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap}
 .trk th{font-size:.75rem;color:var(--muted);font-weight:700}
-.trk td.n,.trk th.n{text-align:left;white-space:normal;min-width:5.5rem}
+.trk td.n,.trk th.n{text-align:left;white-space:normal;min-width:7rem}
 .trk td.n b{display:block}
+.trk select.who{font:inherit;font-size:.86rem;font-weight:700;color:inherit;background:transparent;border:1px dashed var(--line);border-radius:6px;padding:.1rem .1rem;margin:0 0 .1rem -.2rem;width:100%;max-width:9rem;cursor:pointer}
 .trk td.n small{color:var(--muted)}
 .trk input{width:1.15rem;height:1.15rem;accent-color:#3E7D4E;cursor:pointer}
 .trk tr.done td{opacity:.55}
@@ -205,6 +206,7 @@
   }
   var STEPS = ['Infos saisies sur le site admin', 'Taxe de séjour envoyée sur Airbnb ou Booking', 'Message au client : payer la taxe de séjour', 'Taxe de séjour payée (confirmée)', 'Guest Cards remplies sur le site de Leukerbad', 'Message au client : Guest Cards envoyées'];
   function stepsOf(s){ return Array.isArray(s.steps) ? s.steps : []; }
+  function contactOf(s){ var n = namesOf(s); return n.indexOf(s.contact) >= 0 ? s.contact : (n[0] || '?'); }
   function viewTrack(){
     var today = todayISO(), showAll = false;
     try { showAll = sessionStorage.getItem('cn-trk-all') === '1'; } catch(e){}
@@ -217,7 +219,7 @@
     list.forEach(function(s){
       var i = state.stays.indexOf(s), st = stepsOf(s), done = st.length + 1, next = 0;
       for (var k = 2; k <= 6; k++) if (st.indexOf(k) < 0){ next = k; break; }
-      h += '<tr' + (done === 6 ? ' class="done"' : '') + '><td class="n"><b>' + esc(namesOf(s)[0] || '?') + '</b><small>' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</small></td>';
+      h += '<tr' + (done === 6 ? ' class="done"' : '') + '><td class="n">' + (namesOf(s).length > 1 ? '<select class="who" data-contact="' + i + '"' + (busy ? ' disabled' : '') + ' aria-label="Prénom affiché">' + namesOf(s).map(function(n){ return '<option' + (n === contactOf(s) ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' : '<b>' + esc(contactOf(s)) + '</b>') + '<small>' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</small></td>';
       h += '<td><input type="checkbox" checked disabled aria-label="' + esc(STEPS[0]) + '"></td>';
       for (var k2 = 2; k2 <= 6; k2++){
         h += '<td><input type="checkbox" data-stay="' + i + '" data-step="' + k2 + '"' + (st.indexOf(k2) >= 0 ? ' checked' : '') + (k2 === next ? ' class="next"' : '') + (busy ? ' disabled' : '') + ' aria-label="' + esc(STEPS[k2 - 1]) + '"></td>';
@@ -259,7 +261,14 @@
         return Object.assign({}, x, {steps: st.sort()});
       });
       app.querySelectorAll('input[data-step]').forEach(function(x){ x.disabled = true; });
-      save({stays: stays, settings: state.settings}, 'Étape ' + k + ' ' + (cb.checked ? 'cochée' : 'décochée') + ' pour ' + (namesOf(state.stays[i])[0] || '') + '.');
+      save({stays: stays, settings: state.settings}, 'Étape ' + k + ' ' + (cb.checked ? 'cochée' : 'décochée') + ' pour ' + contactOf(state.stays[i]) + '.');
+    }); });
+    app.querySelectorAll('select[data-contact]').forEach(function(sel){ sel.addEventListener('change', function(){
+      if (busy) return;
+      var i = +sel.dataset.contact, v = sel.value;
+      var stays = state.stays.map(function(x, j){ return j === i ? Object.assign({}, x, {contact: v}) : x; });
+      app.querySelectorAll('select[data-contact], input[data-step]').forEach(function(x){ x.disabled = true; });
+      save({stays: stays, settings: state.settings}, 'Prénom affiché : ' + v + '.');
     }); });
     var ta = document.getElementById('trkAll'); if (ta) ta.addEventListener('change', function(){ try { sessionStorage.setItem('cn-trk-all', ta.checked ? '1' : '0'); } catch(e){} render(); });
     var lr = document.getElementById('logReload'); if (lr) lr.addEventListener('click', function(){ loadVisits(); render(); });

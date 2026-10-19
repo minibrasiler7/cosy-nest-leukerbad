@@ -10,7 +10,7 @@ var ADMIN_PASSWORD = 'Mondoudou7';
 
 var SHEET_STAYS = 'sejours';
 var SHEET_SETTINGS = 'reglages';
-var STAY_HEADERS = ['prenoms', 'langue', 'arrivee', 'depart', 'etapes'];
+var STAY_HEADERS = ['prenoms', 'langue', 'arrivee', 'depart', 'etapes', 'contact'];
 var SETTING_KEYS = ['wifiName', 'wifiPass', 'checkin', 'checkout', 'hostPhone', 'parkingSpot'];
 var SHEET_VISITS = 'visites';
 var VISIT_HEADERS = ['date', 'sejour', 'ville', 'region', 'pays', 'appareil', 'langue'];
@@ -57,7 +57,7 @@ function readState_() {
   rows.forEach(function (r) {
     var names = String(r[0] || '').split(/\s*[,;]\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
     if (!names.length) return;
-    stays.push({ names: names, lang: String(r[1] || 'auto').trim() || 'auto', from: iso_(r[2]), to: iso_(r[3]), steps: steps_(r[4]) });
+    stays.push({ names: names, lang: String(r[1] || 'auto').trim() || 'auto', from: iso_(r[2]), to: iso_(r[3]), steps: steps_(r[4]), contact: contact_(r[5], names) });
   });
   var se = sheet_(SHEET_SETTINGS, ['cle', 'valeur']);
   var settings = {};
@@ -79,7 +79,7 @@ function writeState_(state) {
       var names = Array.isArray(s.names) ? s.names : String(s.name || '').split(',');
       names = names.map(function (x) { return String(x).trim(); }).filter(Boolean);
       if (!names.length) return;
-      rows.push([names.join(', '), String(s.lang || 'auto'), "'" + iso_(s.from), "'" + iso_(s.to), "'" + steps_(s.steps).join(',')]);
+      rows.push([names.join(', '), String(s.lang || 'auto'), "'" + iso_(s.from), "'" + iso_(s.to), "'" + steps_(s.steps).join(','), contact_(s.contact, names)]);
     });
     st.getRange(1, 1, rows.length, STAY_HEADERS.length).setValues(rows);
     st.setFrozenRows(1);
@@ -128,4 +128,10 @@ function steps_(v) {
   var out = [];
   list.forEach(function (x) { var n = parseInt(x, 10); if (n >= 2 && n <= 6 && out.indexOf(n) < 0) out.push(n); });
   return out.sort();
+}
+
+// Prénom de contact choisi dans le suivi (doit faire partie des prénoms du séjour)
+function contact_(v, names) {
+  var c = String(v == null ? '' : v).trim();
+  return names.indexOf(c) >= 0 ? c : '';
 }
