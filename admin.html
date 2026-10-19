@@ -39,6 +39,21 @@
 .visit:first-child{border-top:0}
 .visit b{display:block}
 .visit small{color:var(--muted)}
+.trk-wrap{overflow-x:auto;margin:0 -.2rem}
+.trk{border-collapse:collapse;width:100%;font-size:.88rem}
+.trk th,.trk td{padding:.45rem .25rem;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;white-space:nowrap}
+.trk th{font-size:.75rem;color:var(--muted);font-weight:700}
+.trk td.n,.trk th.n{text-align:left;white-space:normal;min-width:5.5rem}
+.trk td.n b{display:block}
+.trk td.n small{color:var(--muted)}
+.trk input{width:1.15rem;height:1.15rem;accent-color:#3E7D4E;cursor:pointer}
+.trk tr.done td{opacity:.55}
+.trk .next{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.steps{margin:.2rem 0 .8rem;padding-left:1.3rem;font-size:.86rem;color:var(--muted)}
+.steps li{margin:0 0 .15rem}
+.bar{display:inline-block;min-width:2.3rem;font-size:.75rem;font-weight:700;padding:.1rem .35rem;border-radius:999px;background:var(--bg)}
+.bar.full{background:#DCEFE3;color:#1E5A36}
+.legend label{display:flex;align-items:center;gap:.45rem;cursor:pointer}
 .vday{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:capitalize;margin:.9rem 0 .2rem}
 </style>
 </head>
@@ -188,6 +203,31 @@
     });
     return h + '</section>';
   }
+  var STEPS = ['Infos saisies sur le site admin', 'Taxe de séjour envoyée sur Airbnb ou Booking', 'Message au client : payer la taxe de séjour', 'Taxe de séjour payée (confirmée)', 'Guest Cards remplies sur le site de Leukerbad', 'Message au client : Guest Cards envoyées'];
+  function stepsOf(s){ return Array.isArray(s.steps) ? s.steps : []; }
+  function viewTrack(){
+    var today = todayISO(), showAll = false;
+    try { showAll = sessionStorage.getItem('cn-trk-all') === '1'; } catch(e){}
+    var list = sorted().filter(function(s){ return showAll || s.to >= today || stepsOf(s).length < 5; });
+    var h = '<section class="card adm"><h3>Suivi des réservations</h3>';
+    h += '<ol class="steps">' + STEPS.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
+    h += '<p class="hint">Cochez une case dès qu’une étape est faite : c’est enregistré tout de suite. L’étape 1 est cochée automatiquement quand le séjour est ajouté. Le cadre doré indique la prochaine étape.</p>';
+    if (!list.length) return h + '<p class="hint">Aucune réservation à suivre.</p></section>';
+    h += '<div class="trk-wrap"><table class="trk"><thead><tr><th class="n">Réservation</th>' + STEPS.map(function(x, i){ return '<th title="' + esc(x) + '">' + (i + 1) + '</th>'; }).join('') + '<th></th></tr></thead><tbody>';
+    list.forEach(function(s){
+      var i = state.stays.indexOf(s), st = stepsOf(s), done = st.length + 1, next = 0;
+      for (var k = 2; k <= 6; k++) if (st.indexOf(k) < 0){ next = k; break; }
+      h += '<tr' + (done === 6 ? ' class="done"' : '') + '><td class="n"><b>' + esc(namesOf(s)[0] || '?') + '</b><small>' + esc(fmt(s.from, {day:'numeric', month:'short'})) + ' → ' + esc(fmt(s.to, {day:'numeric', month:'short'})) + '</small></td>';
+      h += '<td><input type="checkbox" checked disabled aria-label="' + esc(STEPS[0]) + '"></td>';
+      for (var k2 = 2; k2 <= 6; k2++){
+        h += '<td><input type="checkbox" data-stay="' + i + '" data-step="' + k2 + '"' + (st.indexOf(k2) >= 0 ? ' checked' : '') + (k2 === next ? ' class="next"' : '') + (busy ? ' disabled' : '') + ' aria-label="' + esc(STEPS[k2 - 1]) + '"></td>';
+      }
+      h += '<td><span class="bar' + (done === 6 ? ' full' : '') + '">' + done + '/6</span></td></tr>';
+    });
+    h += '</tbody></table></div>';
+    h += '<p class="legend"><label><input type="checkbox" id="trkAll"' + (showAll ? ' checked' : '') + '> Afficher aussi les séjours terminés et complets</label></p></section>';
+    return h;
+  }
   function viewSettings(){
     var s = state.settings || {};
     return '<section class="card adm"><h3>Réglages</h3><div class="grid">' +
@@ -201,14 +241,27 @@
   }
 
   function render(){
-    var tabs = [['list','Séjours'],['cal','Calendrier'],['add','Ajouter'],['log','Connexions'],['set','Réglages']];
+    var tabs = [['list','Séjours'],['track','Suivi'],['cal','Calendrier'],['add','Ajouter'],['log','Connexions'],['set','Réglages']];
     var h = head() + '<div class="topbar"><h1 style="margin:0;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:2rem">Espace hôte</h1><button type="button" class="btn" id="logout">Se déconnecter</button></div>';
     h += '<div class="tabs" role="tablist">' + tabs.map(function(t){ return '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
     h += '<p class="status" id="admStatus" role="status"></p>';
-    h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : tab === 'log' ? viewLog() : viewList();
+    h += tab === 'cal' ? viewCal() : tab === 'add' ? viewAdd() : tab === 'set' ? viewSettings() : tab === 'log' ? viewLog() : tab === 'track' ? viewTrack() : viewList();
     app.innerHTML = h;
     document.getElementById('logout').addEventListener('click', function(){ password = null; try { sessionStorage.removeItem('cn-pass'); } catch(e){} renderLogin(); });
     app.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ tab = b.dataset.tab; try { sessionStorage.setItem('cn-tab', tab); } catch(e){} if (tab === 'log') loadVisits(); render(); }); });
+    app.querySelectorAll('input[data-step]').forEach(function(cb){ cb.addEventListener('change', function(){
+      if (busy) { cb.checked = !cb.checked; return; }
+      var i = +cb.dataset.stay, k = +cb.dataset.step;
+      var stays = state.stays.map(function(x, j){
+        if (j !== i) return x;
+        var st = stepsOf(x).filter(function(n){ return n !== k; });
+        if (cb.checked) st.push(k);
+        return Object.assign({}, x, {steps: st.sort()});
+      });
+      app.querySelectorAll('input[data-step]').forEach(function(x){ x.disabled = true; });
+      save({stays: stays, settings: state.settings}, 'Étape ' + k + ' ' + (cb.checked ? 'cochée' : 'décochée') + ' pour ' + (namesOf(state.stays[i])[0] || '') + '.');
+    }); });
+    var ta = document.getElementById('trkAll'); if (ta) ta.addEventListener('change', function(){ try { sessionStorage.setItem('cn-trk-all', ta.checked ? '1' : '0'); } catch(e){} render(); });
     var lr = document.getElementById('logReload'); if (lr) lr.addEventListener('click', function(){ loadVisits(); render(); });
     app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){
       var s = state.stays[+b.dataset.del]; if (!s) return;
@@ -224,7 +277,7 @@
       var clash = state.stays.filter(function(s){ return s.from < to && from < s.to; });
       if (clash.length && !confirm('Ce séjour chevauche celui de ' + namesOf(clash[0]).join(', ') + '. Ajouter quand même ?')) return;
       tab = 'list'; try { sessionStorage.setItem('cn-tab', tab); } catch(e){}
-      save({stays: state.stays.concat([{names:names, lang:l, from:from, to:to}]), settings: state.settings}, 'Séjour ajouté et enregistré.');
+      save({stays: state.stays.concat([{names:names, lang:l, from:from, to:to, steps:[]}]), settings: state.settings}, 'Séjour ajouté et enregistré.');
     });
     var ss = document.getElementById('sSave');
     if (ss) ss.addEventListener('click', function(){
