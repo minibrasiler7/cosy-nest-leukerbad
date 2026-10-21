@@ -153,7 +153,7 @@
     h += '</section><div class="topics">' + D.order.map(function(id){
       return '<details class="topic" data-id="' + id + '"><summary>' + esc(t.titles[id]) + '</summary><div class="body">' + render_blocks(id, lang, S) + '</div></details>';
     }).join('') + '</div>';
-    h += '<footer class="bottom">Cosy Nest<br>Zur Gasse 87, 3954 Leukerbad<br><small>' + esc(t.privacy) + '</small></footer></div>';
+    h += '<footer class="bottom">Cosy Nest<br>Zur Gasse 87, 3954 Leukerbad</footer></div>';
     var app = document.getElementById('app');
     var open = {}; app.querySelectorAll('details.topic[open]').forEach(function(d){ open[d.dataset.id] = true; });
     if (map) { try { map.remove(); } catch(e){} map = null; }
