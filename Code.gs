@@ -13,8 +13,8 @@ var SHEET_SETTINGS = 'reglages';
 var STAY_HEADERS = ['prenoms', 'langue', 'arrivee', 'depart', 'etapes', 'contact'];
 var SETTING_KEYS = ['wifiName', 'wifiPass', 'checkin', 'checkout', 'hostPhone', 'parkingSpot'];
 var SHEET_VISITS = 'visites';
-var VISIT_HEADERS = ['date', 'sejour', 'ville', 'region', 'pays', 'appareil', 'langue'];
-var MAX_VISITS = 2000;
+var VISIT_HEADERS = ['date', 'sejour', 'ville', 'region', 'pays', 'appareil', 'langue', 'type'];
+var MAX_VISITS = 5000;
 
 function doGet(e) {
   return json_(readState_());
@@ -103,7 +103,7 @@ function logVisit_(b) {
   try {
     var sh = sheet_(SHEET_VISITS, VISIT_HEADERS);
     var now = Utilities.formatDate(new Date(), 'Europe/Zurich', 'yyyy-MM-dd HH:mm');
-    sh.appendRow(["'" + now, clip(b.stay), clip(b.city), clip(b.region), clip(b.country), clip(b.device), clip(b.lang)]);
+    sh.appendRow(["'" + now, clip(b.stay), clip(b.city), clip(b.region), clip(b.country), clip(b.device), clip(b.lang), clip(b.who)]);
     var n = sh.getLastRow();
     if (n > MAX_VISITS + 1) sh.deleteRows(2, n - MAX_VISITS - 1);
   } finally {
@@ -115,10 +115,10 @@ function readVisits_() {
   var sh = sheet_(SHEET_VISITS, VISIT_HEADERS);
   var n = sh.getLastRow() - 1;
   if (n < 1) return [];
-  var k = Math.min(n, 300);
+  var k = Math.min(n, MAX_VISITS);
   var rows = sh.getRange(sh.getLastRow() - k + 1, 1, k, VISIT_HEADERS.length).getDisplayValues();
   return rows.reverse().map(function (r) {
-    return { date: r[0], stay: r[1], city: r[2], region: r[3], country: r[4], device: r[5], lang: r[6] };
+    return { date: r[0], stay: r[1], city: r[2], region: r[3], country: r[4], device: r[5], lang: r[6], who: r[7] || '' };
   });
 }
 

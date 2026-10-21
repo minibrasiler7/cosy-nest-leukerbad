@@ -202,16 +202,21 @@
   }
   function viewLog(){
     var h = '<section class="card adm"><div class="cal-head"><h3 style="font-family:inherit;font-size:1rem;font-weight:700;text-transform:none">Connexions au site voyageurs</h3><button type="button" class="btn" id="logReload">Actualiser</button></div>';
-    h += '<p class="hint">Une ligne par visite (une seule fois par session). Vos propres visites, depuis un appareil connecté à l’espace hôte, ne sont pas comptées. Le lieu est approximatif : il vient de l’adresse internet.</p>';
+    var hideHost = false; try { hideHost = sessionStorage.getItem('cn-log-hide') === '1'; } catch(e){}
+    h += '<p class="hint">Chaque ouverture de la page voyageurs est enregistrée. Les visites faites depuis un appareil connecté à l’espace hôte sont marquées « Hôte », les liens de test « Test ». Le lieu est approximatif : il vient de l’adresse internet.</p>';
+    h += '<p class="legend" style="margin:0 0 .6rem"><label><input type="checkbox" id="logHide"' + (hideHost ? ' checked' : '') + '> Masquer mes visites (hôte et tests)</label></p>';
     if (visitsErr) return h + '<p class="status err">' + esc(visitsErr) + '</p></section>';
     if (!visits) return h + '<p class="status">Chargement…</p></section>';
     if (!visits.length) return h + '<p class="hint">Aucune connexion enregistrée pour l’instant.</p></section>';
+    var shown = visits.filter(function(v){ return !hideHost || !v.who; });
+    h += '<p class="status">' + shown.length + ' connexion' + (shown.length > 1 ? 's' : '') + (hideHost ? ' de voyageurs' : ' au total') + '.</p>';
     var lastDay = '';
-    visits.forEach(function(v){
+    shown.forEach(function(v){
       var day = String(v.date).slice(0, 10), time = String(v.date).slice(11, 16);
       if (day !== lastDay){ h += '<div class="vday">' + esc(fmt(day, {weekday:'long', day:'numeric', month:'long'})) + '</div>'; lastDay = day; }
       var where = [v.city, v.country].filter(Boolean).join(', ') || 'Lieu inconnu';
-      h += '<div class="visit"><b>' + esc(time) + ' · ' + esc(where) + '</b><small>' + esc(v.stay || 'Aucun séjour en cours') + ' · ' + esc(DEV[v.device] || v.device || '') + (v.lang ? ' · ' + esc(LNG[v.lang] || v.lang) : '') + (v.region ? ' · ' + esc(v.region) : '') + '</small></div>';
+      var tag = v.who === 'hote' ? ' <span class="tag" style="background:#F7E7C6;color:#7A4E0E">Hôte</span>' : (v.who === 'test' ? ' <span class="tag" style="background:#E4E8EE;color:#3D4A5C">Test</span>' : '');
+      h += '<div class="visit"><b>' + esc(time) + ' · ' + esc(where) + tag + '</b><small>' + esc(v.stay || 'Aucun séjour en cours') + ' · ' + esc(DEV[v.device] || v.device || '') + (v.lang ? ' · ' + esc(LNG[v.lang] || v.lang) : '') + (v.region ? ' · ' + esc(v.region) : '') + '</small></div>';
     });
     return h + '</section>';
   }
@@ -282,6 +287,7 @@
       save({stays: stays, settings: state.settings}, 'Prénom affiché : ' + v + '.');
     }); });
     var ta = document.getElementById('trkAll'); if (ta) ta.addEventListener('change', function(){ try { sessionStorage.setItem('cn-trk-all', ta.checked ? '1' : '0'); } catch(e){} render(); });
+    var lh = document.getElementById('logHide'); if (lh) lh.addEventListener('change', function(){ try { sessionStorage.setItem('cn-log-hide', lh.checked ? '1' : '0'); } catch(e){} render(); });
     var lr = document.getElementById('logReload'); if (lr) lr.addEventListener('click', function(){ loadVisits(); render(); });
     app.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click', function(){
       var s = state.stays[+b.dataset.del]; if (!s) return;

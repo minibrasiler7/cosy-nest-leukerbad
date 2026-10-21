@@ -195,11 +195,8 @@
   }
 
   function logVisit(){
-    try {
-      if (qs.nom || localStorage.getItem('cn-host')) return;
-      if (sessionStorage.getItem('cn-logged')) return;
-      sessionStorage.setItem('cn-logged', '1');
-    } catch(e){ return; }
+    var who = qs.nom ? 'test' : '';
+    try { if (!who && localStorage.getItem('cn-host')) who = 'hote'; } catch(e){}
     var url = (window.CN_CONFIG && window.CN_CONFIG.api) || ''; if (!url) return;
     var stay = currentStay(state.stays), ua = navigator.userAgent || '';
     var dev = /iPad|Tablet/i.test(ua) ? 'tablette' : (/Mobi|Android|iPhone/i.test(ua) ? 'mobile' : 'ordinateur');
@@ -208,7 +205,7 @@
     function send(g){
       if (sent) return; sent = true; g = g || {};
       fetch(url, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({action:'visit', stay: stay ? namesOf(stay).join(', ') : '', city: g.city || '', region: g.region || '', country: g.country || '', device: dev, lang: lang})}).catch(function(){});
+        body: JSON.stringify({action:'visit', stay: stay ? namesOf(stay).join(', ') : '', city: g.city || '', region: g.region || '', country: g.country || '', device: dev, lang: lang, who: who})}).catch(function(){});
     }
     setTimeout(function(){ send({}); }, 5000);
     fetch('https://get.geojs.io/v1/ip/geo.json').then(function(r){ return r.json(); }).then(send, function(){ send({}); });
